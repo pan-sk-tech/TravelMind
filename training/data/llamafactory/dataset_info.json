@@ -1,0 +1,34 @@
+{
+  "trip_planner_sft_260511_mimo_budget_usage_validate100_w50_dedup100_budget_clean_train": {
+    "file_name": "generated/trip_planner_sft_260511_mimo_budget_usage_validate100_w50_dedup100_budget_clean_train.json"
+  },
+  "trip_planner_sft_260511_mimo_budget_usage_validate100_w50_dedup100_budget_clean_val": {
+    "file_name": "generated/trip_planner_sft_260511_mimo_budget_usage_validate100_w50_dedup100_budget_clean_val.json"
+  },
+  "trip_planner_bestofn_260512_anti_leak1200_vllm23_w8_sft_train": {
+    "file_name": "trip_planner_bestofn_260512_anti_leak1200_vllm23_w8_sft_train.json"
+  },
+  "trip_planner_bestofn_260512_anti_leak1200_vllm23_w8_sft_val": {
+    "file_name": "trip_planner_bestofn_260512_anti_leak1200_vllm23_w8_sft_val.json"
+  },
+  "trip_planner_bestofn_260512_anti_leak1200_vllm23_w8_pair_train": {
+    "file_name": "trip_planner_bestofn_260512_anti_leak1200_vllm23_w8_pair_train.json",
+    "ranking": true,
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "conversations",
+      "chosen": "chosen",
+      "rejected": "rejected"
+    }
+  },
+  "trip_planner_bestofn_260512_anti_leak1200_vllm23_w8_pair_val": {
+    "file_name": "trip_planner_bestofn_260512_anti_leak1200_vllm23_w8_pair_val.json",
+    "ranking": true,
+    "formatting": "sharegpt",
+    "columns": {
+      "messages": "conversations",
+      "chosen": "chosen",
+      "rejected": "rejected"
+    }
+  }
+}
