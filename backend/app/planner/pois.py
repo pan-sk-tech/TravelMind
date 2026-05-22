@@ -149,7 +149,6 @@ FOOD_BUDGET_SUPPLEMENT_KEYWORDS = {
     ],
 }
 HOTEL_BUDGET_UPGRADE_KEYWORDS = {
-    "comfortable": ["精品酒店", "中高端酒店", "高端酒店"],
     "premium": ["高端酒店", "五星级酒店", "豪华酒店", "度假酒店"],
     "luxury": ["奢华酒店", "五星级酒店", "豪华酒店", "度假酒店"],
 }

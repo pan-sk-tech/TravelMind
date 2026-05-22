@@ -17,15 +17,29 @@ from .output import (
 
 
 MEAL_PER_PERSON_FLOOR_BY_BUDGET_LEVEL = {
-    "limited": 25,
-    "economy": 25,
-    "standard": 35,
-    "medium": 35,
-    "comfortable": 50,
-    "upper": 50,
+    # Meal scale is only enforced for genuinely high-budget trips. Comfortable
+    # users may still reasonably choose local snacks and casual restaurants.
     "premium": 70,
     "luxury": 100,
 }
+
+LOCAL_SNACK_MEAL_MARKERS = [
+    "小吃", "名小吃", "老字号", "地道", "本地", "风味", "苍蝇馆",
+    "面馆", "拉面", "牛肉面", "刀削面", "热干面", "烩面", "臊子面", "炸酱面", "小面", "拌面", "炒面", "汤面", "海鲜面", "莜面", "饸饹面",
+    "粉店", "米粉", "螺蛳粉", "牛肉粉", "羊肉粉", "粉馆", "肠粉", "河粉", "米线", "过桥米线", "酸辣粉",
+    "馄饨", "云吞", "抄手", "饺子", "水饺", "小笼包", "生煎", "锅贴",
+    "包子", "烧饼", "锅盔", "肉夹馍", "煎饼", "凉皮", "凉面",
+    "砂锅", "麻辣烫", "冒菜", "串串", "炸串", "卤味", "卤煮", "鸭血粉丝",
+    "粥", "粿条", "饵丝", "饵块", "豆花", "大排档", "排档",
+]
+LOCAL_SNACK_SCENE_MARKERS = [
+    "夜市", "美食街", "小吃街", "老街", "古城", "步行街", "市集", "集市",
+    "早市", "菜市场", "农贸市场", "档口", "摊",
+]
+LIGHT_MEAL_MARKERS = [
+    "甜品", "糖水", "糕点", "点心", "奶茶", "茶饮", "咖啡", "冰粉",
+    "饮品", "面包", "蛋糕", "下午茶", "饼屋", "鲜花饼",
+]
 
 
 @dataclass
@@ -342,16 +356,39 @@ def budget_arithmetic_consistent(trip_plan: TripPlan) -> bool:
 
 def _meal_cost_scale_ok(trip_plan: TripPlan, request: TripRequest) -> bool:
     budget_level = str(request.budget_constraint.budget_level or "standard").strip().lower()
-    floor = MEAL_PER_PERSON_FLOOR_BY_BUDGET_LEVEL.get(budget_level, 35)
+    floor = MEAL_PER_PERSON_FLOOR_BY_BUDGET_LEVEL.get(budget_level, 0)
+    if floor <= 0:
+        return True
 
+    checked = 0
+    floor_hits = 0
     for day in trip_plan.days:
         for meal in day.meals:
             meal_type = str(meal.type or "").strip().lower()
             if meal_type not in {"lunch", "dinner"}:
                 continue
-            if _safe_int(meal.estimated_cost) < floor:
-                return False
-    return True
+            checked += 1
+            cost = _safe_int(meal.estimated_cost)
+            if cost >= floor:
+                floor_hits += 1
+                continue
+            if _is_local_snack_meal(str(meal.name or "")):
+                continue
+            return False
+
+    required_floor_hits = (checked + 1) // 2
+    return checked == 0 or floor_hits >= required_floor_hits
+
+
+def _is_local_snack_meal(name: str) -> bool:
+    text = str(name or "").strip()
+    if not text:
+        return False
+    if any(marker in text for marker in LIGHT_MEAL_MARKERS):
+        return False
+    return any(marker in text for marker in LOCAL_SNACK_MEAL_MARKERS) or any(
+        marker in text for marker in LOCAL_SNACK_SCENE_MARKERS
+    )
 
 
 def _meal_diversity_key(name: str) -> str:

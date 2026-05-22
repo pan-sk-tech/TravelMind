@@ -49,6 +49,8 @@
 
 ## 目录结构
 
+完整目录职责和本地/公开资产边界见 [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)。
+
 ```text
 helloagents-trip-planner/
 ├── backend/
@@ -69,6 +71,7 @@ helloagents-trip-planner/
 │   │   └── views/
 │   ├── package.json
 │   └── vite.config.ts
+├── skills/               # Codex 本地工作流技能
 ├── training/
 │   ├── configs/             # 按模型分组的训练配置
 │   ├── data/                # 训练/评估数据
@@ -76,6 +79,7 @@ helloagents-trip-planner/
 │   ├── outputs/eval/        # 公开的评测汇总
 │   ├── prompts/             # 数据生成 prompt
 │   └── scripts/             # 训练脚本，按 shared/serving/validation 和当前任务分组
+├── PROJECT_STRUCTURE.md  # 项目级目录索引
 └── README.md
 ```
 

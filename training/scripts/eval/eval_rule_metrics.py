@@ -413,6 +413,13 @@ def evaluate_output(record: dict[str, Any], generation: dict[str, Any]) -> dict[
         "meal_diversity_ok",
         "recomputed_budget_fit_ok",
     ]
+    planner_soft_keys = [
+        "attraction_diversity_ok",
+        "meal_diversity_ok",
+        "meal_cost_scale_ok",
+        "recomputed_budget_user_constraint_ok",
+        "recomputed_budget_fit_ok",
+    ]
     legacy_hard_keys = [
         "json_extract_ok",
         "schema_ok",
@@ -454,6 +461,7 @@ def evaluate_output(record: dict[str, Any], generation: dict[str, Any]) -> dict[
     metrics["dpo_soft_recomputed_budget_pass"] = metrics["sft_hard_pass"] and all(
         metrics.get(key) for key in dpo_soft_recomputed_budget_keys
     )
+    metrics["planner_soft_pass"] = metrics["sft_hard_pass"] and all(metrics.get(key) for key in planner_soft_keys)
     metrics["legacy_hard_pass"] = all(metrics.get(key) for key in legacy_hard_keys)
     semantic_budget_hard_keys = [
         key
@@ -607,26 +615,26 @@ def budget_relationship_details(
 def meal_cost_scale_details(record: dict[str, Any], plan: dict[str, Any]) -> dict[str, Any]:
     """检查餐饮人均费用是否体现预算档位。
 
-    新口径下 meal.estimated_cost 是“人均单餐费用”，不是整组费用。
-    这里不要求 total_meals 精确等于人均餐费之和乘人数，只判断 lunch/dinner
-    本身不要明显低于预算档位对应的人均餐费。早餐价格受城市、品类、酒店权益
-    影响太大，不参与该尺度检查。
+    新口径下 meal.estimated_cost 是“人均单餐费用”，不是整组费用。早餐价格受
+    城市、品类、酒店权益影响太大，不参与该尺度检查。
+
+    这个指标只约束 premium/luxury：高预算不是不能吃当地小吃，而是整趟午晚餐
+    不能全部低价。低价的正餐型当地小吃/夜市/大排档可以作为例外，但至少一半
+    午晚餐仍需达到该预算档位的人均价格尺度。甜品、咖啡、奶茶等轻食饮品不作为
+    lunch/dinner 的低价例外。
     """
     party_total = max(1, structured_party_size(record))
     constraint = (record.get("request") or {}).get("budget_constraint") or {}
     control = record.get("control_spec") or {}
     budget_level = str(constraint.get("budget_level") or control.get("budget_level") or "standard")
-    per_person_floor = {
-        "limited": 25,
-        "economy": 25,
-        "standard": 35,
-        "medium": 35,
-        "comfortable": 50,
-        "upper": 50,
+    floor_by_level = {
         "premium": 70,
         "luxury": 100,
-    }.get(budget_level, 35)
+    }
+    per_person_floor = floor_by_level.get(budget_level, 0)
     failures = []
+    low_cost_exceptions = []
+    floor_hit_count = 0
     meal_count = 0
     checked_count = 0
     for day in plan.get("days") or []:
@@ -637,29 +645,172 @@ def meal_cost_scale_details(record: dict[str, Any], plan: dict[str, Any]) -> dic
             cost = _safe_int(meal.get("estimated_cost"))
             if meal_type not in {"lunch", "dinner"}:
                 continue
-            floor = per_person_floor
             checked_count += 1
-            if cost < floor:
-                failures.append(
+            if per_person_floor <= 0:
+                continue
+            if cost >= per_person_floor:
+                floor_hit_count += 1
+                continue
+            if is_local_snack_meal(meal_name):
+                low_cost_exceptions.append(
                     {
                         "date": day.get("date"),
                         "type": meal.get("type"),
                         "name": meal_name,
                         "estimated_cost": cost,
-                        "min_expected_cost": floor,
+                        "min_expected_cost": per_person_floor,
                     }
                 )
+                continue
+            failures.append(
+                {
+                    "date": day.get("date"),
+                    "type": meal.get("type"),
+                    "name": meal_name,
+                    "estimated_cost": cost,
+                    "min_expected_cost": per_person_floor,
+                    "reason": "low_cost_non_local_snack",
+                }
+            )
+    required_floor_hits = (checked_count + 1) // 2 if per_person_floor > 0 else 0
+    enough_floor_hits = per_person_floor <= 0 or floor_hit_count >= required_floor_hits
+    if per_person_floor > 0 and checked_count > 0 and not enough_floor_hits:
+        failures.append(
+            {
+                "reason": "not_enough_full_scale_meals",
+                "floor_hit_count": floor_hit_count,
+                "required_floor_hits": required_floor_hits,
+                "checked_count": checked_count,
+                "low_cost_exception_count": len(low_cost_exceptions),
+            }
+        )
     return {
         "ok": not failures,
         "party_total": party_total,
         "budget_level": budget_level,
         "per_person_lunch_dinner_floor": per_person_floor,
         "breakfast_policy": "excluded_from_meal_cost_scale",
+        "enforced_levels": sorted(floor_by_level),
+        "local_snack_policy": "low-cost local snacks/night markets are allowed, but at least half of premium/luxury lunch/dinner meals must meet the floor",
         "meal_count": meal_count,
         "checked_count": checked_count,
+        "floor_hit_count": floor_hit_count,
+        "required_floor_hits": required_floor_hits,
+        "low_cost_exception_count": len(low_cost_exceptions),
+        "low_cost_exceptions": low_cost_exceptions[:20],
         "failure_count": len(failures),
         "failures": failures[:20],
     }
+
+
+LOCAL_SNACK_MEAL_MARKERS = [
+    "小吃",
+    "名小吃",
+    "老字号",
+    "地道",
+    "本地",
+    "风味",
+    "苍蝇馆",
+    "面馆",
+    "拉面",
+    "牛肉面",
+    "刀削面",
+    "热干面",
+    "烩面",
+    "臊子面",
+    "炸酱面",
+    "小面",
+    "拌面",
+    "炒面",
+    "汤面",
+    "海鲜面",
+    "莜面",
+    "饸饹面",
+    "粉店",
+    "米粉",
+    "螺蛳粉",
+    "牛肉粉",
+    "羊肉粉",
+    "粉馆",
+    "肠粉",
+    "河粉",
+    "米线",
+    "过桥米线",
+    "酸辣粉",
+    "馄饨",
+    "云吞",
+    "抄手",
+    "饺子",
+    "水饺",
+    "小笼包",
+    "生煎",
+    "锅贴",
+    "包子",
+    "烧饼",
+    "锅盔",
+    "肉夹馍",
+    "煎饼",
+    "凉皮",
+    "凉面",
+    "砂锅",
+    "麻辣烫",
+    "冒菜",
+    "串串",
+    "炸串",
+    "卤味",
+    "卤煮",
+    "鸭血粉丝",
+    "粥",
+    "粿条",
+    "饵丝",
+    "饵块",
+    "豆花",
+    "大排档",
+    "排档",
+]
+LOCAL_SNACK_SCENE_MARKERS = [
+    "夜市",
+    "美食街",
+    "小吃街",
+    "老街",
+    "古城",
+    "步行街",
+    "市集",
+    "集市",
+    "早市",
+    "菜市场",
+    "农贸市场",
+    "档口",
+    "摊",
+]
+LIGHT_MEAL_MARKERS = [
+    "甜品",
+    "糖水",
+    "糕点",
+    "点心",
+    "奶茶",
+    "茶饮",
+    "咖啡",
+    "冰粉",
+    "饮品",
+    "面包",
+    "蛋糕",
+    "下午茶",
+    "饼屋",
+    "鲜花饼",
+]
+
+
+def is_local_snack_meal(name: str) -> bool:
+    """判断低价 lunch/dinner 是否像数据里的当地小吃或夜市/摊档体验。"""
+    text = str(name or "").strip()
+    if not text:
+        return False
+    if any(marker in text for marker in LIGHT_MEAL_MARKERS):
+        return False
+    return any(marker in text for marker in LOCAL_SNACK_MEAL_MARKERS) or any(
+        marker in text for marker in LOCAL_SNACK_SCENE_MARKERS
+    )
 
 
 MEAL_EMPTY_NAMES = {"", "无", "无安排", "不安排", "无需", "暂无"}

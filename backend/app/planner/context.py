@@ -121,7 +121,10 @@ class PlannerContextBuilder:
         preference_keywords = build_poi_keywords(request, "preference")
         experience_keywords = build_poi_keywords(request, "experience")
         food_keyword_groups = build_food_keyword_groups(request)
-        use_local_high_end = should_use_high_end_local_pois(request.budget_constraint.budget_level or "")
+        budget_level = request.budget_constraint.budget_level or ""
+        use_local_high_end_scenic = should_use_high_end_local_pois(budget_level, "scenic")
+        use_local_high_end_experience = should_use_high_end_local_pois(budget_level, "experience")
+        use_local_high_end_food = should_use_high_end_local_pois(budget_level, "food")
 
         classic_pois = self.amap_client.search_classic_pois(
             request.city,
@@ -158,7 +161,7 @@ class PlannerContextBuilder:
             )
             attraction_upgrade_pois = with_ticket_price_hints(attraction_upgrade_pois, request)
         local_scenic_pois = []
-        if use_local_high_end:
+        if use_local_high_end_scenic:
             local_scenic_pois = with_ticket_price_hints(
                 local_high_end_pois(request.city, "scenic", "attraction_budget_upgrade"),
                 request,
@@ -187,7 +190,7 @@ class PlannerContextBuilder:
                 [experience_upgrade_pois, experience_pois],
                 PLANNER_CONTEXT_POI_LIMIT,
             )
-        if use_local_high_end:
+        if use_local_high_end_experience:
             experience_pois = merge_poi_buckets(
                 [
                     local_high_end_pois(request.city, "experience", "experience_budget_upgrade"),
@@ -199,7 +202,7 @@ class PlannerContextBuilder:
         scenic_pois = strip_budget_context_metadata(scenic_pois)
         experience_pois = strip_budget_context_metadata(experience_pois)
         food_buckets = []
-        if use_local_high_end:
+        if use_local_high_end_food:
             food_buckets.append(local_high_end_pois(request.city, "food", "food_budget_upgrade"))
         for group in food_keyword_groups:
             if group["bucket"] == "food_base":
@@ -252,7 +255,7 @@ class PlannerContextBuilder:
     def _collect_hotel_snapshot(self, request: TripRequest) -> Dict[str, Any]:
         """搜索酒店候选。"""
         hotel_buckets = []
-        if should_use_high_end_local_pois(request.budget_constraint.budget_level or ""):
+        if should_use_high_end_local_pois(request.budget_constraint.budget_level or "", "hotel"):
             hotel_buckets.append(local_high_end_pois(request.city, "hotel", "hotel_budget_upgrade"))
         for group in build_hotel_keyword_groups(request):
             hotel_limit = (

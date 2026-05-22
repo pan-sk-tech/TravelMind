@@ -4,7 +4,7 @@
 
 当前目标不是让模型凭空知道更多旅行事实，而是让后端先把事实和约束编译成结构化 `PlannerContext`，再让 Planner 模型稳定生成符合业务协议的 `TripPlan JSON`。
 
-更新时间：2026-05-12。文件结构和生命周期规则见 [STRUCTURE.md](STRUCTURE.md)，长期文档索引见 [docs/README.md](docs/README.md)。
+更新时间：2026-05-22。文件结构和生命周期规则见 [STRUCTURE.md](STRUCTURE.md)，长期文档索引见 [docs/README.md](docs/README.md)，本机完整后训练资产地图见 [docs/后训练产物/本地资产索引.md](docs/后训练产物/本地资产索引.md)。
 
 ## 分工
 
@@ -266,7 +266,7 @@ training/outputs/eval/reports/<YYMMDD>_<report_slug>/
 - `training/data/planner/dpo/prompts.jsonl`
 - `training/data/planner/dpo/prompt_source/records.jsonl`
 
-公开仓库只保留 DPO 口径和轻量说明。pair 构造、judge、prompt source 和训练产物仍按本地实验资产处理；当前公开参考为 `docs/内部文档/DPO分块LogProb方案说明.md`、`scripts/planner/README.md` 和 `scripts/planner/bestofn/README.md`。
+公开仓库只保留 DPO 口径和轻量说明。pair 构造、judge、prompt source 和训练产物仍按本地实验资产处理；当前公开参考为 `docs/后训练产物/03_DPO阶段/README.md`、`docs/后训练产物/04_Rerank阶段/README.md`、`scripts/planner/README.md` 和 `scripts/planner/bestofn/README.md`。单生成最佳点是 `260519 checkpoint-138`；最终展示版本是 `260521 checkpoint-64 rerank n4`。
 
 ## 不上传的内容
 

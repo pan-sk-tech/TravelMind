@@ -1,5 +1,7 @@
 # Manifest
 
+
+> 历史镜像说明：这个目录是早期英文路径版产物归档，后续主入口已经迁到 `training/docs/后训练产物/`。新 DPO、Rerank 和最终结论不要再追加到这里；只把它当作旧路径兼容参考。
 ## 00 Overview
 
 | Target | Source |

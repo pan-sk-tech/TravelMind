@@ -245,6 +245,8 @@ def start(args: argparse.Namespace) -> int:
         "--port",
         str(args.port),
     ]
+    if args.model_path:
+        cmd.extend(["--model-path", str(args.model_path)])
     if args.infer_backend == "vllm":
         cmd.extend(["--vllm-maxlen", str(args.vllm_maxlen), "--vllm-gpu-util", str(args.vllm_gpu_util)])
     if args.adapter_path:
@@ -275,6 +277,7 @@ def start(args: argparse.Namespace) -> int:
         "infer_backend": args.infer_backend,
         "cuda_visible_devices": args.cuda_visible_devices,
         "api_model_name": args.api_model_name,
+        "model_path": str(args.model_path) if args.model_path else None,
         "log_file": str(log_file),
         "cmd": cmd,
         "started_at": time.strftime("%Y-%m-%d %H:%M:%S"),
@@ -316,6 +319,7 @@ def parse_args() -> argparse.Namespace:
     start_parser.add_argument("--infer-backend", choices=["huggingface", "vllm", "sglang", "ktransformers"], default=DEFAULT_BACKEND)
     start_parser.add_argument("--cuda-visible-devices", "--devices", default=DEFAULT_DEVICES)
     start_parser.add_argument("--api-model-name", default=DEFAULT_API_MODEL)
+    start_parser.add_argument("--model-path", type=Path, default=None, help="Base model path or HF repo id passed to serve_planner_model.py.")
     start_parser.add_argument("--adapter-path", type=Path, default=None)
     start_parser.add_argument("--no-adapter", action="store_true")
     start_parser.add_argument("--vllm-maxlen", type=int, default=32768)
@@ -331,6 +335,7 @@ def parse_args() -> argparse.Namespace:
     restart_parser.add_argument("--infer-backend", choices=["huggingface", "vllm", "sglang", "ktransformers"], default=DEFAULT_BACKEND)
     restart_parser.add_argument("--cuda-visible-devices", "--devices", default=DEFAULT_DEVICES)
     restart_parser.add_argument("--api-model-name", default=DEFAULT_API_MODEL)
+    restart_parser.add_argument("--model-path", type=Path, default=None, help="Base model path or HF repo id passed to serve_planner_model.py.")
     restart_parser.add_argument("--adapter-path", type=Path, default=None)
     restart_parser.add_argument("--no-adapter", action="store_true")
     restart_parser.add_argument("--vllm-maxlen", type=int, default=32768)

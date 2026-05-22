@@ -7,6 +7,7 @@ from ..models.schemas import TripRequest
 
 
 HIGH_BUDGET_LEVELS = {"comfortable", "premium", "luxury"}
+HOTEL_HIGH_BUDGET_LEVELS = {"premium", "luxury"}
 
 FOOD_VERIFIED_MIN = {
     "comfortable": 120,
@@ -20,15 +21,16 @@ FOOD_CONTEXT_MIN = {
 }
 
 HOTEL_VERIFIED_MIN = {
-    "comfortable": 500,
     "premium": 900,
     "luxury": 1200,
 }
 HOTEL_CONTEXT_MIN = {
-    "comfortable": 400,
     "premium": 700,
     "luxury": 900,
 }
+COMFORTABLE_HOTEL_TARGET_MIN = 350
+COMFORTABLE_HOTEL_TARGET_MAX = 700
+COMFORTABLE_HOTEL_TARGET_MID = 550
 
 FOOD_HIGH_END_KEYWORDS = [
     "米其林",
@@ -241,7 +243,13 @@ def rank_hotels_for_budget_context(
     annotated = [annotate_hotel_candidate(row, budget_level) for row in rows]
     annotated = dedupe_candidates(annotated, _hotel_dedupe_key, _hotel_priority)
 
-    if budget_level not in HIGH_BUDGET_LEVELS:
+    if budget_level == "comfortable":
+        ranked = sorted(annotated, key=_comfortable_hotel_priority)
+        if limit is not None:
+            ranked = ranked[:limit]
+        return assign_budget_ranks(ranked)
+
+    if budget_level not in HOTEL_HIGH_BUDGET_LEVELS:
         ranked = annotated[:limit] if limit else annotated
         return assign_budget_ranks(ranked)
 
@@ -294,7 +302,7 @@ def annotate_food_candidate(row: Dict[str, Any], budget_level: str) -> Dict[str,
 def annotate_hotel_candidate(row: Dict[str, Any], budget_level: str) -> Dict[str, Any]:
     """Attach high-end verification metadata to one hotel candidate."""
     item = dict(row)
-    if budget_level not in HIGH_BUDGET_LEVELS:
+    if budget_level not in HOTEL_HIGH_BUDGET_LEVELS:
         item.setdefault("price_confidence", _price_confidence(item.get("cost_source")))
         return item
 
@@ -489,6 +497,25 @@ def _hotel_priority(row: Dict[str, Any]) -> Tuple[Any, ...]:
         _source_rank(row),
         _confidence_rank(row),
         -_number(row.get("estimated_cost_hint")),
+        -_rating(row),
+        str(row.get("name") or ""),
+    )
+
+
+def _comfortable_hotel_priority(row: Dict[str, Any]) -> Tuple[Any, ...]:
+    price = _number(row.get("estimated_cost_hint"))
+    if COMFORTABLE_HOTEL_TARGET_MIN <= price <= COMFORTABLE_HOTEL_TARGET_MAX:
+        price_band = 0
+    elif price and price < COMFORTABLE_HOTEL_TARGET_MIN:
+        price_band = 1
+    else:
+        price_band = 2
+    low_end_signal = _has_any(hotel_low_end_text(row), HOTEL_LOW_END_KEYWORDS)
+    return (
+        price_band,
+        low_end_signal,
+        abs(price - COMFORTABLE_HOTEL_TARGET_MID) if price else 99999,
+        _source_rank(row),
         -_rating(row),
         str(row.get("name") or ""),
     )

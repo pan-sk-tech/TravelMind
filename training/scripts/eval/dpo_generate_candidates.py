@@ -53,6 +53,7 @@ class CandidateSpec:
     temperature: float
     count: int
     base_url: str = ""
+    provider: str = ""
 
 
 def build_local_client(base_url: str, args: argparse.Namespace) -> OpenAI:
@@ -93,7 +94,7 @@ def call_local_model(prompt_row: dict[str, Any], spec: CandidateSpec, args: argp
 
 def call_strong_model(prompt_row: dict[str, Any], spec: CandidateSpec, args: argparse.Namespace) -> tuple[str, str]:
     """调用强模型生成候选。"""
-    llm = DataGenLLM()
+    llm = DataGenLLM(provider=spec.provider or None)
     max_tokens = args.max_tokens or planner_max_output_tokens(
         prompt_row.get("request") or {},
         base=args.output_base_tokens,
@@ -109,8 +110,9 @@ def call_strong_model(prompt_row: dict[str, Any], spec: CandidateSpec, args: arg
         "temperature": spec.temperature,
         "max_tokens": max_tokens,
         "stream": False,
-        "reasoning_effort": llm.reasoning_effort,
     }
+    if llm.reasoning_effort:
+        kwargs["reasoning_effort"] = llm.reasoning_effort
     if llm.enable_thinking:
         kwargs["extra_body"] = {"thinking": {"type": "enabled"}}
     response = llm.client.chat.completions.create(**kwargs)
@@ -346,6 +348,7 @@ def build_specs(args: argparse.Namespace) -> list[CandidateSpec]:
                 source_model=args.strong_label,
                 temperature=args.strong_low_temperature,
                 count=args.strong_low_count,
+                provider=args.strong_provider,
             )
         )
     if args.include_strong_high:
@@ -356,6 +359,7 @@ def build_specs(args: argparse.Namespace) -> list[CandidateSpec]:
                 source_model=args.strong_label,
                 temperature=args.strong_high_temperature,
                 count=args.strong_high_count,
+                provider=args.strong_provider,
             )
         )
     if not specs:
@@ -390,6 +394,12 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument("--include-strong-low", action="store_true")
     parser.add_argument("--include-strong-high", action="store_true")
+    parser.add_argument(
+        "--strong-provider",
+        choices=["env", "deepseek", "mimo"],
+        default=None,
+        help="强模型 provider；不填时沿用 DATA_GEN_PROVIDER/env。调用 MIMO 时必须显式传 mimo。",
+    )
     parser.add_argument("--strong-label", default="strong")
     parser.add_argument("--strong-low-temperature", type=float, default=0.2)
     parser.add_argument("--strong-high-temperature", type=float, default=0.7)

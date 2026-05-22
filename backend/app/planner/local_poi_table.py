@@ -13,6 +13,13 @@ HIGH_END_POI_TABLE_PATH = Path(
 )
 
 HIGH_BUDGET_LEVELS = {"comfortable", "premium", "luxury"}
+HOTEL_HIGH_BUDGET_LEVELS = {"premium", "luxury"}
+HIGH_BUDGET_LEVELS_BY_CATEGORY = {
+    "food": HIGH_BUDGET_LEVELS,
+    "scenic": HIGH_BUDGET_LEVELS,
+    "experience": HIGH_BUDGET_LEVELS,
+    "hotel": HOTEL_HIGH_BUDGET_LEVELS,
+}
 DEFAULT_SOURCE_BUCKET = {
     "food": "food_budget_upgrade",
     "hotel": "hotel_budget_upgrade",
@@ -27,9 +34,10 @@ DEFAULT_SOURCE_KEYWORD = {
 }
 
 
-def should_use_high_end_local_pois(budget_level: str) -> bool:
+def should_use_high_end_local_pois(budget_level: str, category: str = "") -> bool:
     """Return whether curated high-end POIs should enter context."""
-    return budget_level in HIGH_BUDGET_LEVELS
+    levels = HIGH_BUDGET_LEVELS_BY_CATEGORY.get(category, HIGH_BUDGET_LEVELS)
+    return budget_level in levels
 
 
 def local_high_end_pois(city: str, category: str, source_bucket: str = "") -> List[Dict[str, Any]]:

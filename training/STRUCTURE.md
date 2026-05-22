@@ -1,6 +1,6 @@
 # Training Asset Structure
 
-更新时间：2026-05-12
+更新时间：2026-05-22
 
 这个文件定义 `training/` 下数据、脚本、文档和评测产物的边界。后续整理文件时先遵守这里的生命周期规则，再决定是否移动或归档。
 
@@ -29,6 +29,7 @@
 | `scripts/planner/` | 当前主线 | 按 `data/`、`eval/`、`audit/`、`pricing/`、`bestofn/`、`training/` 分组。 |
 | `scripts/archive/` | legacy | 只作为迁移参考或本地 DPO helper 来源，不作为当前公开主线。 |
 | `outputs/eval/reports/` | 公开报告 | 只放 Markdown 和小体积指标 JSON。 |
+| `docs/后训练产物/本地资产索引.md` | 本地地图 | 记录本机模型、数据、评测输出、缓存和归档的归属；不等于公开提交清单。 |
 | `outputs/eval/by_model/`、`comparisons/`、`audits/`、`logs/` | 本地生成 | 完整评测产物默认忽略；需要公开时整理成 `reports/<YYMMDD>_<slug>/`。 |
 
 ## 新增资产命名

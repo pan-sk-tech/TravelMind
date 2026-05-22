@@ -37,6 +37,9 @@ HOTEL_CITY_FACTORS = {
     "南京": 1.05,
     "苏州": 1.05,
 }
+HOTEL_FALLBACK_CAP_BY_BUDGET_LEVEL = {
+    "comfortable": 700,
+}
 HIGH_END_HOTEL_FALLBACK_BY_SIGNAL = [
     (
         [
@@ -237,7 +240,7 @@ def estimate_hotel_cost(request: TripRequest, row: Dict[str, Any]) -> int:
             base = value
             break
     factor = HOTEL_CITY_FACTORS.get(request.city, 1.0)
-    return round_to_50(base * factor)
+    return cap_hotel_fallback_cost(request, round_to_50(base * factor))
 
 
 def estimate_hotel_cost_profile(request: TripRequest, row: Dict[str, Any]) -> tuple[int, str]:
@@ -261,7 +264,18 @@ def estimate_high_end_hotel_cost(request: TripRequest, row: Dict[str, Any]) -> O
     if base is None:
         return None
     factor = HOTEL_CITY_FACTORS.get(request.city, 1.0)
-    return round_to_50(base * factor)
+    return cap_hotel_fallback_cost(request, round_to_50(base * factor))
+
+
+def cap_hotel_fallback_cost(request: TripRequest, cost: int) -> int:
+    """Cap rule-estimated hotel prices for mid-budget requests."""
+    budget_level = ""
+    if request.budget_constraint:
+        budget_level = request.budget_constraint.budget_level or ""
+    cap = HOTEL_FALLBACK_CAP_BY_BUDGET_LEVEL.get(budget_level)
+    if cap is not None and cost > cap:
+        return cap
+    return cost
 
 
 def high_end_hotel_price_text(row: Dict[str, Any]) -> str:
