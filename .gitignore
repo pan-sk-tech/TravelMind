@@ -105,6 +105,7 @@ lightning_logs/
 !/training/outputs/eval/README.md
 
 # Training caches and bulky regenerated intermediate data
+/training/.hf_cache/
 /training/data/cache/
 /training/data/**/.cache/
 /training/data/**/tmp/
