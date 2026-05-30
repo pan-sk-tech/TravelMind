@@ -23,23 +23,7 @@ DPO 主要学习合法候选之间的偏好：
 - 更贴合同行人、饮食、节奏和负向约束。
 - 更可执行、更少重复、更适合真实用户。
 
-## 公开目录
 
-```text
-training/
-├── STRUCTURE.md          # 数据、脚本、文档、报告的目录边界
-├── configs/              # 按模型分组的训练配置
-├── data/
-│   ├── llamafactory/     # LLaMA-Factory 数据入口
-│   └── travelmind/               # 当前训练、评估和票价数据
-├── outputs/eval/         # 轻量评测报告、comparison 和 manifest
-├── prompts/              # 数据生成 prompt
-├── scripts/
-│   ├── shared/           # 公共 helper 和 LLM 客户端
-│   ├── serving/          # 本地 TravelMind Agent服务
-│   ├── validation/       # TripPlan schema 校验
-│   └── travelmind/               # 当前脚本按 data/eval/audit/pricing/training 分组
-└── requirements-training.txt
 ```
 
 
