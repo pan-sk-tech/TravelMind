@@ -1,7 +1,5 @@
 ﻿# travelmind 数据目录
 
-更新时间：2026-05-12
-
 travelmind 数据从新的 TravelMindContext 协议重新生成，不再直接沿用 legacy clean records。目录边界以 `training/STRUCTURE.md` 为准。
 
 当前主入口：
