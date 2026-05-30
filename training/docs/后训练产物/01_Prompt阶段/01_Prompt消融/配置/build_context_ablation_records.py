@@ -1,7 +1,7 @@
-"""基于 frozen eval records 生成 PlannerContext 消融版本。
+﻿"""基于 frozen eval records 生成 TravelMindContext 消融版本。
 
-脚本不重新调用工具，只改 record 中的 planner_context、compact_planner_context
-以及 planner_query 里的 PlannerContext JSON。system_prompt 和后续执行规则保持不变。
+脚本不重新调用工具，只改 record 中的 travelmind_context、compact_travelmind_context
+以及 travelmind_query 里的 TravelMindContext JSON。system_prompt 和后续执行规则保持不变。
 """
 
 from __future__ import annotations
@@ -101,7 +101,7 @@ def build_policy_summary(context: dict[str, Any]) -> dict[str, Any]:
     request = context.get("request") or {}
     preference = context.get("preference_profile") or {}
     lodging = context.get("lodging_policy") or {}
-    constraints = context.get("planner_constraints") or {}
+    constraints = context.get("travelmind_constraints") or {}
     return {
         "city": request.get("city"),
         "travel_days": request.get("travel_days"),
@@ -146,7 +146,7 @@ def transform_context(original: dict[str, Any], variant: str) -> dict[str, Any]:
             "lodging_policy": context.get("lodging_policy") or {},
             "pricing_policy": context.get("pricing_policy") or {},
             "route_policy": context.get("route_policy") or {},
-            "planner_constraints": context.get("planner_constraints") or {},
+            "travelmind_constraints": context.get("travelmind_constraints") or {},
             "tool_snapshot": snapshot,
         }
         return {key: value for key, value in ordered.items() if value is not None}
@@ -161,19 +161,19 @@ def replace_context_in_query(query: str, request: dict[str, Any], context: dict[
     city = request.get("city") or context.get("request", {}).get("city") or "目的地"
     days = request.get("travel_days") or context.get("request", {}).get("travel_days") or ""
     context_json = json.dumps(context, ensure_ascii=False, separators=(",", ":"))
-    return f"请根据下面的 PlannerContext JSON 生成{city}的{days}天旅行计划。\n\nPlannerContext:\n{context_json}{suffix}"
+    return f"请根据下面的 TravelMindContext JSON 生成{city}的{days}天旅行计划。\n\nTravelMindContext:\n{context_json}{suffix}"
 
 
 def build_variant_records(records: list[dict[str, Any]], variant: str, source_records: Path) -> list[dict[str, Any]]:
     now = datetime.now(timezone.utc).isoformat()
     output = []
     for record in records:
-        original_context = record.get("compact_planner_context") or record.get("planner_context") or {}
+        original_context = record.get("compact_travelmind_context") or record.get("travelmind_context") or {}
         context = transform_context(original_context, variant)
         row = dict(record)
-        row["planner_context"] = context
-        row["compact_planner_context"] = context
-        row["planner_query"] = replace_context_in_query(str(row.get("planner_query") or ""), row.get("request") or {}, context)
+        row["travelmind_context"] = context
+        row["compact_travelmind_context"] = context
+        row["travelmind_query"] = replace_context_in_query(str(row.get("travelmind_query") or ""), row.get("request") or {}, context)
         row["context_variant"] = variant
         row["context_variant_source_records"] = str(source_records)
         row["context_variant_created_at"] = now
@@ -184,7 +184,7 @@ def build_variant_records(records: list[dict[str, Any]], variant: str, source_re
                 "context_variant": variant,
                 "context_variant_source_records": str(source_records),
                 "context_variant_created_at": now,
-                "prompt_chars": len(row["planner_query"]),
+                "prompt_chars": len(row["travelmind_query"]),
                 "compact_context_chars": len(json.dumps(context, ensure_ascii=False)),
                 "tool_counts": context_counts(context),
             }
@@ -198,13 +198,13 @@ def write_summary(path: Path, variant: str, records: list[dict[str, Any]], sourc
     before = []
     after = []
     for row in records:
-        after.append(context_counts(row.get("compact_planner_context") or {}))
+        after.append(context_counts(row.get("compact_travelmind_context") or {}))
     lines = [
         f"# Context 消融记录：{variant}",
         "",
         f"- 来源 records：`{source_records}`",
         f"- 样本数：{len(records)}",
-        "- 改动范围：只改 PlannerContext JSON 和 planner_query 中的上下文；system_prompt 与后续 prompt 规则不变。",
+        "- 改动范围：只改 TravelMindContext JSON 和 travelmind_query 中的上下文；system_prompt 与后续 prompt 规则不变。",
         "",
         "## 变体说明",
         "",
@@ -229,7 +229,7 @@ def write_summary(path: Path, variant: str, records: list[dict[str, Any]], sourc
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="生成 context 消融 frozen records")
     parser.add_argument("--input-records", type=Path, required=True)
-    parser.add_argument("--output-root", type=Path, default=Path("training/data/planner/context_ablation"))
+    parser.add_argument("--output-root", type=Path, default=Path("training/data/travelmind/context_ablation"))
     parser.add_argument("--name-prefix", required=True)
     parser.add_argument("--variants", default=",".join(VARIANT_ORDER))
     return parser.parse_args()
@@ -248,9 +248,10 @@ def main() -> None:
         output_records = build_variant_records(records, variant, args.input_records)
         write_jsonl(output_dir / "records.jsonl", output_records)
         write_summary(output_dir / "context消融说明.md", variant, output_records, args.input_records)
-        avg_prompt_chars = int(sum(len(row.get("planner_query") or "") for row in output_records) / max(len(output_records), 1))
+        avg_prompt_chars = int(sum(len(row.get("travelmind_query") or "") for row in output_records) / max(len(output_records), 1))
         print(f"{variant}: {len(output_records)} -> {output_dir / 'records.jsonl'} avg_prompt_chars={avg_prompt_chars}")
 
 
 if __name__ == "__main__":
     main()
+

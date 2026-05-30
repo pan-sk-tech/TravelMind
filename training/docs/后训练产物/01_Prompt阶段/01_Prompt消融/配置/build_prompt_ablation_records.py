@@ -1,7 +1,7 @@
-"""基于同一批 frozen eval records 生成 prompt 消融版本。
+﻿"""基于同一批 frozen eval records 生成 prompt 消融版本。
 
-脚本只改 system_prompt 和 planner_query，不重新调用工具，也不改变
-request/planner_context。这样可以把评估差异尽量收敛到 prompt 规则本身。
+脚本只改 system_prompt 和 travelmind_query，不重新调用工具，也不改变
+request/travelmind_context。这样可以把评估差异尽量收敛到 prompt 规则本身。
 """
 
 from __future__ import annotations
@@ -110,7 +110,7 @@ ATTRACTION_SELF_CHECK_RULE = """景点输出前自检补充:
 BUDGET_HARD_RULE = """预算口径补充:
 - hotel.estimated_cost 表示“全体同行每晚住宿费用”，不是单人价格；budget.total_hotels 必须等于所有非 null day.hotel.estimated_cost 按住宿晚数加总。同一酒店住 N 晚，就按每晚费用乘 N 晚。
 - meal.estimated_cost 表示“全体同行这一餐总费用”，不是单人价格；budget.total_meals 必须等于所有 meal.estimated_cost 直接加总，不要再乘 party.total。
-- attraction.ticket_price 表示“成人单人门票”；budget.total_attractions 必须等于所有已选景点 ticket_price 之和再乘以 PlannerContext.party.total。
+- attraction.ticket_price 表示“成人单人门票”；budget.total_attractions 必须等于所有已选景点 ticket_price 之和再乘以 TravelMindContext.party.total。
 - budget.total 必须只由四个分项重新加总得到：total_attractions + total_hotels + total_meals + total_transportation。不要凭感觉填总价，不要照抄示例数字。
 """
 
@@ -136,18 +136,18 @@ BUDGET_FEWSHOT_RULE = """预算算术口径示例:
 
 BUDGET_SYMBOLIC_RULE = """预算算术口径示例:
 - 酒店总价 = 每晚住宿费用 × 实际住宿晚数；最后一天 hotel=null 时不计住宿。
-- 景点总价 = 所选景点成人单人门票之和 × PlannerContext.party.total。
+- 景点总价 = 所选景点成人单人门票之和 × TravelMindContext.party.total。
 - 餐饮总价 = 所有 breakfast/lunch/dinner 的整组 meal.estimated_cost 直接加总，不再乘人数。
 - 总预算 = 景点总价 + 酒店总价 + 餐饮总价 + 全程本地交通。
-这个示例只用于理解计算口径，不包含任何可复用数字；实际输出必须使用当前 PlannerContext 的候选价格和同行人数重新计算。
+这个示例只用于理解计算口径，不包含任何可复用数字；实际输出必须使用当前 TravelMindContext 的候选价格和同行人数重新计算。
 """
 
 
 BUDGET_LEDGER_RULE = """预算账本强约束:
 - budget 不是新的规划内容，而是对已经输出的 days 数组做机械汇总。先完整写好 days，再回扫 days 里的字段计算 budget。
 - total_hotels 只等于所有非 null day.hotel.estimated_cost 的逐项加总；如果最后一天 hotel=null，就不计入最后一天；不要按 travel_days、party.total 或用户预算重新乘。
-- total_attractions 只等于所有 days[].attractions[].ticket_price 的逐项加总后再乘 PlannerContext.party.total；不要把已经乘过人数的结果再写进 attraction.ticket_price。
-- total_meals 只等于所有 days[].meals[].estimated_cost 的逐项加总；meal.estimated_cost 已经是整组单餐费用，绝不能再乘 PlannerContext.party.total。
+- total_attractions 只等于所有 days[].attractions[].ticket_price 的逐项加总后再乘 TravelMindContext.party.total；不要把已经乘过人数的结果再写进 attraction.ticket_price。
+- total_meals 只等于所有 days[].meals[].estimated_cost 的逐项加总；meal.estimated_cost 已经是整组单餐费用，绝不能再乘 TravelMindContext.party.total。
 - total_transportation 是唯一允许估算的预算分项，必须是非负整数；估完后也必须参与最终加总。
 - 最后一步只做这一件事：budget.total = total_attractions + total_hotels + total_meals + total_transportation。若发现 total 不一致，必须改 budget.total，而不是留下近似值。
 - 如果 budget_fit_policy 或 hard 预算上限与预算账本冲突，先调整酒店/景点/餐厅选择，再重新回扫计算；不要通过少算酒店晚数、少乘门票人数、少加餐费来“凑预算”。
@@ -173,7 +173,7 @@ BUDGET_RELATION_PRIORITY_RULE = """预算语义优先级补充:
 BUDGET_RELATION_SELF_CHECK_RULE = """预算语义自检补充:
 最终输出 JSON 前，内部按下面顺序自检，不要把自检文本输出：
 1. 住宿自检：统计所有非 null hotel 的 day 数，budget.total_hotels 是否大致覆盖这些晚数的住宿费用。
-2. 门票自检：统计所有景点成人单人票价之和，并确认 budget.total_attractions 体现 PlannerContext.party.total。
+2. 门票自检：统计所有景点成人单人票价之和，并确认 budget.total_attractions 体现 TravelMindContext.party.total。
 3. 餐饮自检：检查 lunch/dinner 的 estimated_cost 是否是整组人费用；如果是多人同行，不要出现明显像单人价的正餐费用。
 4. 档位自检：limited/economy 可以节省；standard/comfortable 要正常；premium/luxury 不要做成穷游。
 """
@@ -181,7 +181,7 @@ BUDGET_RELATION_SELF_CHECK_RULE = """预算语义自检补充:
 
 ROOM_PERSON_PRICE_LITE_RULE = """价格口径覆盖规则:
 以下规则覆盖上文所有“酒店全体同行每晚费用、餐饮整组单餐费用”的旧说法。
-- hotel.estimated_cost 表示“单间每晚房价”，按两人一间估算房间数：rooms = ceil(PlannerContext.party.total / 2)。
+- hotel.estimated_cost 表示“单间每晚房价”，按两人一间估算房间数：rooms = ceil(TravelMindContext.party.total / 2)。
 - meal.estimated_cost 表示“人均单餐费用”，不是整组费用。
 - attraction.ticket_price 仍表示成人单人门票。
 """
@@ -190,10 +190,10 @@ ROOM_PERSON_PRICE_LITE_RULE = """价格口径覆盖规则:
 ROOM_PERSON_PRICE_FULL_RULE = """两人一间与人均餐费预算规则:
 以下规则覆盖上文所有旧预算口径。
 - hotel.estimated_cost 必须复制 hotel_pois.estimated_cost_hint，含义是“单间每晚房价”。
-- 酒店总价必须体现房间数和住宿晚数：budget.total_hotels = 所有非 null day.hotel.estimated_cost 之和 × rooms，其中 rooms = ceil(PlannerContext.party.total / 2)。
+- 酒店总价必须体现房间数和住宿晚数：budget.total_hotels = 所有非 null day.hotel.estimated_cost 之和 × rooms，其中 rooms = ceil(TravelMindContext.party.total / 2)。
 - meal.estimated_cost 必须复制 food_pois.meal_cost_hint 或合法 fallback，含义是“人均单餐费用”。
-- 餐饮总价必须体现人数：budget.total_meals = 所有 day.meals[].estimated_cost 之和 × PlannerContext.party.total。
-- attraction.ticket_price 是成人单人门票，budget.total_attractions = 所有 ticket_price 之和 × PlannerContext.party.total。
+- 餐饮总价必须体现人数：budget.total_meals = 所有 day.meals[].estimated_cost 之和 × TravelMindContext.party.total。
+- attraction.ticket_price 是成人单人门票，budget.total_attractions = 所有 ticket_price 之和 × TravelMindContext.party.total。
 - budget.total 可以后续由系统重算；但酒店房间数、餐饮人均价、景点单人票价这些业务口径不能错。
 """
 
@@ -302,7 +302,7 @@ def strip_numeric_schema_example(text: str) -> str:
         return text
     replacement = """字段结构要求:
 必须输出符合 TripPlan schema 的顶层 JSON 对象，字段包括 city/start_date/end_date/days/weather_info/overall_suggestions/budget。
-不要在提示词里模仿任何示例数字；所有日期、名称、价格、预算都必须来自当前 PlannerContext 和最终 days 数组。"""
+不要在提示词里模仿任何示例数字；所有日期、名称、价格、预算都必须来自当前 TravelMindContext 和最终 days 数组。"""
     return f"{text[:start].rstrip()}\n\n{replacement}{text[end:]}"
 
 
@@ -316,7 +316,7 @@ def build_variant_records(records: list[dict[str, Any]], variant: str, source_re
         if variant == "budget_ledger_no_schema_numbers":
             system_prompt = strip_numeric_schema_example(system_prompt)
         row["system_prompt"] = append_rules(system_prompt, variant, "Prompt 消融附加系统规则")
-        row["planner_query"] = append_rules(str(row.get("planner_query") or ""), variant, "Prompt 消融附加执行规则")
+        row["travelmind_query"] = append_rules(str(row.get("travelmind_query") or ""), variant, "Prompt 消融附加执行规则")
         row["prompt_variant"] = variant
         row["prompt_variant_source_records"] = str(source_records)
         row["prompt_variant_created_at"] = now
@@ -326,7 +326,7 @@ def build_variant_records(records: list[dict[str, Any]], variant: str, source_re
             {
                 "prompt_variant": variant,
                 "prompt_variant_source_records": str(source_records),
-                "prompt_chars": len(row["planner_query"]),
+                "prompt_chars": len(row["travelmind_query"]),
                 "system_prompt_chars": len(row["system_prompt"]),
                 "prompt_variant_created_at": now,
             }
@@ -343,7 +343,7 @@ def write_summary(path: Path, variant: str, records: list[dict[str, Any]], sourc
         "",
         f"- 来源 records：`{source_records}`",
         f"- 样本数：{len(records)}",
-        "- 改动范围：只追加 system_prompt 和 planner_query 规则，不改变 request/planner_context/tool_snapshot。",
+        "- 改动范围：只追加 system_prompt 和 travelmind_query 规则，不改变 request/travelmind_context/tool_snapshot。",
         "- 共同餐饮规则：lunch/dinner 宁可重复真实 food_pois，也不能写无、空、酒店晚餐或泛化餐厅。",
         "",
         "## 附加规则",
@@ -359,7 +359,7 @@ def write_summary(path: Path, variant: str, records: list[dict[str, Any]], sourc
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="生成 prompt 消融 frozen records")
     parser.add_argument("--input-records", type=Path, required=True)
-    parser.add_argument("--output-root", type=Path, default=Path("training/data/planner"))
+    parser.add_argument("--output-root", type=Path, default=Path("training/data/travelmind"))
     parser.add_argument("--name-prefix", default="eval_harder_food_bucket_meal_ablation")
     parser.add_argument("--variants", default=",".join(VARIANT_ORDER))
     return parser.parse_args()
@@ -383,3 +383,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

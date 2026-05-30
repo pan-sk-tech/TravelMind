@@ -1,10 +1,10 @@
-# Planner Prompt 消融全阶段总结
+﻿# TravelMind Prompt 消融全阶段总结
 
 更新时间：2026-05-11
 
-这份文档记录 Planner Planner prompt 阶段的搜索过程、主要消融和最终结论。2026-05-05 重新修正并重跑了最终 12 组 A/B/C/D prompt ablation 的 rule eval；2026-05-11 补写前面三十多版 prompt 的探索过程，避免把整个阶段误读成只做了最后十几版。
+这份文档记录 TravelMind TravelMind prompt 阶段的搜索过程、主要消融和最终结论。2026-05-05 重新修正并重跑了最终 12 组 A/B/C/D prompt ablation 的 rule eval；2026-05-11 补写前面三十多版 prompt 的探索过程，避免把整个阶段误读成只做了最后十几版。
 
-结论先行：**当前 7B Planner 的 prompt-only 收益已经基本摸到上限，后续主线不再继续调 prompt**。最终冻结的 prompt baseline 仍是 `A_C`。
+结论先行：**当前 7B TravelMind 的 prompt-only 收益已经基本摸到上限，后续主线不再继续调 prompt**。最终冻结的 prompt baseline 仍是 `A_C`。
 
 冻结 prompt sha256：
 
@@ -15,12 +15,12 @@ dbe3f951082929b5de41e3de38f823356dd94a01896d81246e447d80a196e5c0
 报告入口：
 
 - 这里保留主要表格和阶段结论；原始 generations、batch summary、旧 self-check/context 报告已经作为历史实验资产归档，不作为当前主线入口。
-- 当前 prompt：`backend/app/agents/prompts.py::PLANNER_AGENT_PROMPT`
+- 当前 prompt：`backend/app/agents/prompts.py::TRAVELMIND_AGENT_PROMPT`
 - 旧版过程汇总可参考归档：
-  - `training/archive/2026-05-05_v3_obsolete_prompt_eval_docs/training/outputs/eval/planner_context_ablation_summary.md`
-  - `training/archive/2026-05-05_v3_obsolete_prompt_eval_docs/training/outputs/eval/planner_prompt_two_stage_pass_all_history.md`
-  - `training/archive/2026-05-05_v3_obsolete_prompt_eval_docs/training/outputs/eval/planner_prompt_budget_ablation_summary.md`
-  - `training/archive/2026-05-05_v3_obsolete_prompt_eval_docs/training/outputs/eval/planner_meal_prompt_ablation_summary.md`
+  - `training/archive/2026-05-05_v3_obsolete_prompt_eval_docs/training/outputs/eval/travelmind_context_ablation_summary.md`
+  - `training/archive/2026-05-05_v3_obsolete_prompt_eval_docs/training/outputs/eval/travelmind_prompt_two_stage_pass_all_history.md`
+  - `training/archive/2026-05-05_v3_obsolete_prompt_eval_docs/training/outputs/eval/travelmind_prompt_budget_ablation_summary.md`
+  - `training/archive/2026-05-05_v3_obsolete_prompt_eval_docs/training/outputs/eval/travelmind_meal_prompt_ablation_summary.md`
   - `training/archive/2026-05-07_v3_obsolete_experiment_records/outputs_eval/prompt_ablation_20260505/batch_summary.md`
 
 ## 1. 评估口径更新
@@ -30,7 +30,7 @@ dbe3f951082929b5de41e3de38f823356dd94a01896d81246e447d80a196e5c0
 `meal_grounding_ok` 现在是更严格的样本级指标：
 
 - 每条行程里所有 `meals` 都必须 grounding 成功。
-- `lunch` 和 `dinner` 必须命中 `PlannerContext.tool_snapshot.food_pois`。
+- `lunch` 和 `dinner` 必须命中 `TravelMindContext.tool_snapshot.food_pois`。
 - 只有 `type=breakfast` 且名字为酒店/民宿/客栈/住宿早餐时，才允许不命中 `food_pois`。
 - 任意一餐 miss，整条样本的 `meal_grounding_ok` 就失败。
 - 因此这里同时加入餐次级 `meal_grounding_rate`，用来观察模型逐餐复制候选的真实能力。
@@ -50,7 +50,7 @@ dbe3f951082929b5de41e3de38f823356dd94a01896d81246e447d80a196e5c0
 
 | 家族 | 代表版本 | 主要目的 | 阶段判断 |
 | --- | --- | --- | --- |
-| 基础 Planner / harder / no-route | `planner_hard`、`hard_attr_prompt_w8`、`harder_w8`、`no_route_w8`、`food_bucket_return_dinner_prompt_w8` | 建立 Planner 结构协议，处理景点数量、粗 route_hints、返程晚餐、餐饮桶 | 粗 route_hints 不可靠；去掉后让模型用 POI 的 district/address/location 自行组合更稳 |
+| 基础 TravelMind / harder / no-route | `travelmind_hard`、`hard_attr_prompt_w8`、`harder_w8`、`no_route_w8`、`food_bucket_return_dinner_prompt_w8` | 建立 TravelMind 结构协议，处理景点数量、粗 route_hints、返程晚餐、餐饮桶 | 粗 route_hints 不可靠；去掉后让模型用 POI 的 district/address/location 自行组合更稳 |
 | 上下文形态 | `hard/balanced × full/compact/topk/policy_first_topk` 共 8 组 | 比较候选覆盖、上下文长度、硬约束和软质量 | `hard_compact` 更适合作为硬约束 baseline；`balanced_*` 软质量更好但硬约束弱 |
 | 预算算术规则 | `budget_hard`、`budget_order`、`budget_fewshot`、`budget_symbolic`、`budget_ledger`、`budget_ledger_no_schema_numbers` | 看 prompt 能否让 7B 机械回扫 days 并精确汇总预算 | few-shot 数字污染明显；symbolic 更安全；ledger 类规则仍不能稳定解决长 JSON 算术 |
 | 预算业务口径 | `budget_relation_lite/priority/self_check`、`room_person_price_lite/full/self_check` | 明确房间数、同行人数、餐饮人均价、景点单人票价 | 口径修正是必要的，但 prompt 收益不稳定，预算仍要后端重算 |
@@ -65,7 +65,7 @@ dbe3f951082929b5de41e3de38f823356dd94a01896d81246e447d80a196e5c0
 
 第一阶段主要解决的是：用什么上下文形态和基础约束作为后续 prompt 实验起点。
 
-当时对比了 `hard_*` 和 `balanced_*`，以及 `full / compact / topk / policy_first_topk` 等上下文组织方式。重点不是最终 prompt 文案，而是确认 Planner 输入在结构、候选覆盖和预算口径上怎样最稳。
+当时对比了 `hard_*` 和 `balanced_*`，以及 `full / compact / topk / policy_first_topk` 等上下文组织方式。重点不是最终 prompt 文案，而是确认 TravelMind 输入在结构、候选覆盖和预算口径上怎样最稳。
 
 历史表格：
 
@@ -263,7 +263,7 @@ B + C + D
 
 整个 prompt 消融阶段走过七类尝试：
 
-1. 调基础 Planner 协议、harder eval 和 no-route 口径。
+1. 调基础 TravelMind 协议、harder eval 和 no-route 口径。
 2. 调上下文形态：确认 `hard_compact` 这类结构更适合作为稳定输入。
 3. 调预算算术规则：确认 symbolic 比数字 few-shot 更安全，但 prompt 无法稳定精确回扫。
 4. 调业务预算口径：确认房间数、人均餐费、景点单人票价必须写清楚，但预算要工程重算。
@@ -288,4 +288,5 @@ prompt 阶段结束后，主线切到工程和训练：
 - SFT 重点学习 schema、字段口径、候选 grounding、价格 hint 和结构完整性。
 - 餐饮多样性、路线质量、预算偏好贴合放到 DPO、规则后处理或候选选择策略里。
 
-一句话总结：**`A_C` 是 Planner prompt 阶段的终版 baseline；prompt 已经尽责，真正的增量空间转向后端兜底和训练数据。**
+一句话总结：**`A_C` 是 TravelMind prompt 阶段的终版 baseline；prompt 已经尽责，真正的增量空间转向后端兜底和训练数据。**
+

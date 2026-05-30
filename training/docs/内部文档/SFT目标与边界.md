@@ -1,8 +1,8 @@
-# Planner SFT 目标与边界
+﻿# TravelMind SFT 目标与边界
 
 更新时间：2026-05-06
 
-这份文档用来固定 Planner 阶段 SFT 的训练目标、非目标和验收边界。它和这些文档配合使用：
+这份文档用来固定 TravelMind 阶段 SFT 的训练目标、非目标和验收边界。它和这些文档配合使用：
 
 - `training/docs/内部文档/Prompt消融阶段总结.md`：说明 prompt-only 已接近上限，冻结 `A_C` baseline。
 - `training/docs/内部文档/SFT数据生成口径审核.md`：说明请求分布、字段口径、清洗和生成后处理。
@@ -10,7 +10,7 @@
 
 一句话结论：
 
-**Planner SFT 的目标是把模型训成可靠的结构化 Planner 输出器，而不是一次性训成最优旅行顾问。**
+**TravelMind SFT 的目标是把模型训成可靠的结构化 TravelMind 输出器，而不是一次性训成最优旅行顾问。**
 
 ## 1. 背景判断
 
@@ -21,7 +21,7 @@ Prompt 消融阶段已经证明：
 - 继续堆 prompt 会带来约束淹没：某些局部指标提升，其他硬约束下降。
 - 预算精确加总、餐饮多样性、路线顺滑和体验质量不能全部压给 SFT 第一阶段。
 
-因此 Planner 后训练要分工：
+因此 TravelMind 后训练要分工：
 
 - SFT 学协议、格式、字段语义、grounding 和基础约束。
 - 工程后处理负责确定性预算重算和可规则化修正。
@@ -30,7 +30,7 @@ Prompt 消融阶段已经证明：
 
 ## 2. SFT 主要目标
 
-给定 `PlannerContext planner`，模型应该稳定输出一个后端可解析、可重算、可验证的 `TripPlan` JSON。
+给定 `TravelMindContext travelmind`，模型应该稳定输出一个后端可解析、可重算、可验证的 `TripPlan` JSON。
 
 SFT 重点学习：
 
@@ -78,7 +78,7 @@ SFT 重点学习：
 
 ## 3. SFT 非目标
 
-这些能力不作为 Planner SFT 第一阶段的主胜利条件：
+这些能力不作为 TravelMind SFT 第一阶段的主胜利条件：
 
 | 能力 | 不放进 SFT 主目标的原因 | 后续归属 |
 | --- | --- | --- |
@@ -137,7 +137,7 @@ P2 不作为 SFT 主验收项。
 
 ## 5. 预算目标边界
 
-预算在 Planner 里分三层处理：
+预算在 TravelMind 里分三层处理：
 
 1. **结构账本必须正确**
    - 为兼容当前 `TripPlan` schema，SFT 数据可以保留经过工程重算的正确 `budget`。
@@ -161,12 +161,12 @@ P2 不作为 SFT 主验收项。
 - 让模型第二次重写完整 `TripPlan` 不可取，会破坏 schema、字段完整性和 grounding。
 - 更可控的做法是让第二次模型只输出预算修正 patch，例如 `replace_hotel / replace_meal / replace_attraction`。
 - 工程侧应用 patch 后必须重新计算预算和规则指标；只有预算变好且已通过的 schema、grounding、多样性等指标不回退，才接受 patch。
-- 在 A_C 300 条上，guarded patch 对 SFT cp2 的 `budget_selection_ok` 从 28.33% 提升到 30.33%，`planner_draft_hard_pass` 保持 63.00%。
+- 在 A_C 300 条上，guarded patch 对 SFT cp2 的 `budget_selection_ok` 从 28.33% 提升到 30.33%，`travelmind_draft_hard_pass` 保持 63.00%。
 - 这说明二次模型 patch 是保守增强层，不是预算贴合主解；预算主解仍应是工程重算、候选 rerank 和 deterministic repair。
 
 ## 6. 数据生成验收口径
 
-Planner SFT 样本进入训练集前，至少应满足：
+TravelMind SFT 样本进入训练集前，至少应满足：
 
 - P0 全部通过。
 - 预算字段经过工程重算。
@@ -223,12 +223,13 @@ Planner SFT 样本进入训练集前，至少应满足：
 
 ## 9. 最终定义
 
-Planner SFT 成功的定义：
+TravelMind SFT 成功的定义：
 
-**模型学会 TripPlan 协议和 PlannerContext grounding，能稳定输出结构完整、字段语义正确、价格口径正确、预算账本可重算的 JSON。**
+**模型学会 TripPlan 协议和 TravelMindContext grounding，能稳定输出结构完整、字段语义正确、价格口径正确、预算账本可重算的 JSON。**
 
-Planner SFT 不承诺：
+TravelMind SFT 不承诺：
 
 **一次性学会最优路线、最优餐饮多样性、最佳预算贴合和最自然旅行审美。**
 
 这个边界后续不要轻易扩大。某个指标如果属于偏好排序、体验审美或全局优化，默认先进入 DPO、规则或后处理池，不要继续塞进 SFT 主目标。
+

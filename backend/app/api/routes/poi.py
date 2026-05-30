@@ -1,10 +1,10 @@
-"""POI相关API路由"""
+﻿"""POI相关API路由"""
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from ...config import get_settings
-from ...planner.amap import AmapPlannerClient
+from ...travelmind_core.amap import AmapTravelMindClient
 from ...services.amap_service import get_amap_service
 from ...services.unsplash_service import get_unsplash_service
 
@@ -82,7 +82,7 @@ async def search_poi(
         if not amap_key:
             raise ValueError("高德地图API Key未配置")
 
-        amap_client = AmapPlannerClient(amap_key)
+        amap_client = AmapTravelMindClient(amap_key)
         result = amap_client.search_keywords(
             city=city,
             keywords=[keywords],
@@ -146,3 +146,5 @@ async def get_attraction_photo(name: str):
             status_code=500,
             detail=f"获取景点图片失败: {str(e)}"
         )
+
+

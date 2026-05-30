@@ -1,34 +1,34 @@
-# V2 PlannerContext 数据协议
+﻿# V2 TravelMindContext 数据协议
 
 更新时间：2026-04-30
 
-这份文档定义当前线上后端和 v2 后训练数据共同使用的 Planner 输入协议。当前版本以线上已跑通代码为准，不保留历史草案。
+这份文档定义当前线上后端和 v2 后训练数据共同使用的 TravelMind 输入协议。当前版本以线上已跑通代码为准，不保留历史草案。
 
 ```text
 协议服从当前线上实现。
-离线 SFT/DPO 数据必须和线上真实 Planner 输入同构。
+离线 SFT/DPO 数据必须和线上真实 TravelMind 输入同构。
 ```
 
 ## 当前实现位置
 
 ```text
-backend/app/agents/planner_context.py
-backend/app/agents/trip_planner_agent.py
-backend/app/agents/planner_output.py
+backend/app/agents/travelmind_context.py
+backend/app/agents/travelmind_agent.py
+backend/app/agents/travelmind_output.py
 ```
 
 ## 1. 当前线上流程
 
 ```text
 TripRequest
-  -> PlannerContextBuilder.collect()
+  -> TravelMindContextBuilder.collect()
       -> 并行查询 attractions / weather / hotels
-      -> 生成 raw PlannerContext
-  -> PlannerContextBuilder.compact_for_planner()
-      -> 生成 compact PlannerContext
-  -> _build_planner_query()
-      -> 把 compact PlannerContext 放入 Planner prompt
-  -> Planner LLM
+      -> 生成 raw TravelMindContext
+  -> TravelMindContextBuilder.compact_for_travelmind()
+      -> 生成 compact TravelMindContext
+  -> _build_travelmind_query()
+      -> 把 compact TravelMindContext 放入 TravelMind prompt
+  -> TravelMind LLM
   -> extract_json_object()
   -> TripPlan schema
   -> validate_trip_plan_shape()
@@ -36,18 +36,18 @@ TripRequest
 
 当前存在两层上下文：
 
-- `raw PlannerContext`：完整工具快照，用于命令行审查、日志和后置校验。
-- `compact PlannerContext`：裁剪后的模型输入，用于线上 Planner 和后续 v2 训练数据。
+- `raw TravelMindContext`：完整工具快照，用于命令行审查、日志和后置校验。
+- `compact TravelMindContext`：裁剪后的模型输入，用于线上 TravelMind 和后续 v2 训练数据。
 
-离线训练数据应优先使用线上真实 `planner_query` 作为模型输入；`planner_query` 内部包含 `compact PlannerContext` 和 Planner 规则。同时把 `compact PlannerContext`、`raw PlannerContext` 放到 metadata 中，便于审计。
+离线训练数据应优先使用线上真实 `travelmind_query` 作为模型输入；`travelmind_query` 内部包含 `compact TravelMindContext` 和 TravelMind 规则。同时把 `compact TravelMindContext`、`raw TravelMindContext` 放到 metadata 中，便于审计。
 
-## 2. Raw PlannerContext
+## 2. Raw TravelMindContext
 
-`raw PlannerContext` 是 `PlannerContextBuilder.collect()` 返回的结构。
+`raw TravelMindContext` 是 `TravelMindContextBuilder.collect()` 返回的结构。
 
 ```json
 {
-  "version": "planner_context_v2",
+  "version": "travelmind_context_v2",
   "generated_at": "2026-04-29T00:00:00+00:00",
   "request": {
     "city": "北京",
@@ -79,7 +79,7 @@ TripRequest
     "trip_weather": [],
     "tool_status": {}
   },
-  "planner_constraints": {
+  "travelmind_constraints": {
     "days_count": 4,
     "expected_dates": ["2026-04-29", "2026-04-30", "2026-05-01", "2026-05-02"],
     "attractions_per_day": "2-3",
@@ -98,7 +98,7 @@ TripRequest
 - `daily_budget` 当前线上不解析，固定为 `null`。
 - `pace` 当前线上不解析，固定为 `未指定`。
 - 天气拆为 `available_weather` 和 `trip_weather`。
-- `planner_constraints` 当前是自然语言策略字段，不是布尔 flag 集合。
+- `travelmind_constraints` 当前是自然语言策略字段，不是布尔 flag 集合。
 - 景点召回拆为 `classic_pois` 和 `preference_pois`，`scenic_pois` 是两者合并后的兼容字段。
 - `classic_pois` 是城市级经典候选，默认本地缓存 60 小时。
 
@@ -172,7 +172,7 @@ raw POI 保留较多字段，主要用于审查和后置校验：
   - `rule_estimated`：高德缺少价格时的规则估价。
   - `ota_live_rate`：后续接入 OTA/酒店 Shopping API 后的实时房价，当前暂不作为主线。
 
-Planner 输出时，`hotel.estimated_cost` 表示“元/晚”，应该优先复制对应候选的 `estimated_cost_hint`，不要自行改价。N 天行程默认住宿 N-1 晚，`budget.total_hotels` 必须覆盖所有住宿晚数。
+TravelMind 输出时，`hotel.estimated_cost` 表示“元/晚”，应该优先复制对应候选的 `estimated_cost_hint`，不要自行改价。N 天行程默认住宿 N-1 晚，`budget.total_hotels` 必须覆盖所有住宿晚数。
 
 经典景点召回关键词：
 
@@ -187,12 +187,12 @@ Planner 输出时，`hotel.estimated_cost` 表示“元/晚”，应该优先复
 
 当前召回控制：
 
-- 每个关键词最多保留 `PLANNER_CONTEXT_PER_KEYWORD_LIMIT` 条，默认 `5`。
-- `classic_pois` 总量默认 `PLANNER_CONTEXT_CLASSIC_LIMIT=12`。
-- `preference_pois` 总量默认 `PLANNER_CONTEXT_PREFERENCE_LIMIT=16`。
-- `scenic_pois` 合并后总量默认 `PLANNER_CONTEXT_POI_LIMIT=20`。
-- `classic_pois` 缓存目录默认 `training/data/cache/planner_context/classic_pois/`。
-- `classic_pois` 缓存 TTL 默认 `PLANNER_CONTEXT_CLASSIC_CACHE_TTL_SECONDS=216000`，即 60 小时。
+- 每个关键词最多保留 `TRAVELMIND_CONTEXT_PER_KEYWORD_LIMIT` 条，默认 `5`。
+- `classic_pois` 总量默认 `TRAVELMIND_CONTEXT_CLASSIC_LIMIT=12`。
+- `preference_pois` 总量默认 `TRAVELMIND_CONTEXT_PREFERENCE_LIMIT=16`。
+- `scenic_pois` 合并后总量默认 `TRAVELMIND_CONTEXT_POI_LIMIT=20`。
+- `classic_pois` 缓存目录默认 `training/data/cache/travelmind_context/classic_pois/`。
+- `classic_pois` 缓存 TTL 默认 `TRAVELMIND_CONTEXT_CLASSIC_CACHE_TTL_SECONDS=216000`，即 60 小时。
 
 当前基础过滤：
 
@@ -228,7 +228,7 @@ Planner 输出时，`hotel.estimated_cost` 表示“元/晚”，应该优先复
 当前天气包含两组：
 
 - `available_weather`：可用天气来源。线上通常是高德短期预报；训练数据的历史行程可使用 Open-Meteo Archive。
-- `trip_weather`：按行程日期对齐后的天气，是 Planner 唯一允许使用的天气。
+- `trip_weather`：按行程日期对齐后的天气，是 TravelMind 唯一允许使用的天气。
 
 可用天气：
 
@@ -277,21 +277,21 @@ Planner 输出时，`hotel.estimated_cost` 表示“元/晚”，应该优先复
 
 后端 schema 已允许 `day_temp/night_temp` 为 `int` 或 `str`，不会把 `"未知"` 强行转成 `0`。
 
-## 7. Compact PlannerContext
+## 7. Compact TravelMindContext
 
-`compact PlannerContext` 是最终发给 Planner LLM 的核心结构化上下文。线上真实模型输入不是裸 compact JSON，而是 `_build_planner_query()` 生成的完整用户消息。
+`compact TravelMindContext` 是最终发给 TravelMind LLM 的核心结构化上下文。线上真实模型输入不是裸 compact JSON，而是 `_build_travelmind_query()` 生成的完整用户消息。
 
 生成位置：
 
 ```text
-PlannerContextBuilder.compact_for_planner()
+TravelMindContextBuilder.compact_for_travelmind()
 ```
 
 结构：
 
 ```json
 {
-  "version": "planner_context_v2",
+  "version": "travelmind_context_v2",
   "request": {},
   "user_profile": {},
   "tool_snapshot": {
@@ -311,7 +311,7 @@ PlannerContextBuilder.compact_for_planner()
       "food_pois": 12
     }
   },
-  "planner_constraints": {}
+  "travelmind_constraints": {}
 }
 ```
 
@@ -321,7 +321,7 @@ compact 和 raw 的区别：
 - 删除 `available_weather`。
 - 删除 `tool_status`。
 - 删除 POI 的 `id/typecode/cityname/photo_count/source_role`。
-- 保留 POI 的 `source_bucket`，让 Planner 区分经典、偏好、体验、餐饮、酒店来源。
+- 保留 POI 的 `source_bucket`，让 TravelMind 区分经典、偏好、体验、餐饮、酒店来源。
 - 保留所有候选条数，不默认裁剪候选数量。
 - 只裁字段，不裁候选。
 
@@ -352,21 +352,21 @@ compact POI 字段：
 - `matched_keyword` 来自 raw `source_keyword`。
 - `source_bucket` 来自 raw `source_bucket`，常见值包括 `classic`、`preference`、`experience`、`food`、`hotel`。
 
-## 8. Planner Query
+## 8. TravelMind Query
 
-当前 `_build_planner_query()` 把 compact PlannerContext 嵌入用户消息：
+当前 `_build_travelmind_query()` 把 compact TravelMindContext 嵌入用户消息：
 
 ```text
-请根据下面的 PlannerContext JSON 生成{city}的{travel_days}天旅行计划。
+请根据下面的 TravelMindContext JSON 生成{city}的{travel_days}天旅行计划。
 
-PlannerContext:
+TravelMindContext:
 {compact_context_json}
 
 请严格遵守:
 1. 只返回一个合法JSON对象，不要输出Markdown代码块、解释、前言、工具调用或<think>内容。
 2. 顶层字段必须包含 city/start_date/end_date/days/weather_info/overall_suggestions/budget。
-3. days长度必须等于 PlannerContext.request.travel_days，day_index从0开始，date必须逐日对应。
-4. weather_info必须逐日对应 PlannerContext.tool_snapshot.trip_weather；远期天气不可用时保留“未知”，不要编造天气。
+3. days长度必须等于 TravelMindContext.request.travel_days，day_index从0开始，date必须逐日对应。
+4. weather_info必须逐日对应 TravelMindContext.tool_snapshot.trip_weather；远期天气不可用时保留“未知”，不要编造天气。
 5. 景点优先使用 classic_pois、preference_pois、scenic_pois 和 experience_pois；酒店必须为 null 或使用 hotel_pois 里的真实酒店，不要把“无”“无住宿”“返程”“当天返程”写成 hotel.name；餐饮优先使用对应候选，并沿用候选里的 name/address/location。
 6. 每天安排2-3个景点，每天必须包含breakfast/lunch/dinner三餐。
 7. 预算要和住宿、餐饮、景点门票、交通方式大致一致。酒店如果有 estimated_cost_hint，hotel.estimated_cost 必须复制该单晚价格；N天行程默认住宿N-1晚，budget.total_hotels 必须覆盖住宿晚数。无法从工具获得价格时用系统给出的规则估价，不要让模型自由编价。
@@ -403,13 +403,13 @@ PlannerContext:
 
 ## 10. Retry / Fallback
 
-当前 Planner retry 是干净重试：
+当前 TravelMind retry 是干净重试：
 
 ```text
-同一个 planner_query
+同一个 travelmind_query
   -> 第1次生成
   -> 解析失败
-  -> 第2次仍使用同一个 planner_query
+  -> 第2次仍使用同一个 travelmind_query
 ```
 
 不会把以下内容拼回下一次 prompt：
@@ -417,29 +417,29 @@ PlannerContext:
 - 上一次错误信息。
 - 上一次失败输出。
 - 修复提示。
-- 本地 Planner 失败详情。
+- 本地 TravelMind 失败详情。
 
 失败只用于：
 
-- 写入 `training/data/online_feedback/planner_failures.jsonl`。
+- 写入 `training/data/online_feedback/travelmind_failures.jsonl`。
 - 如果后续成功，可构造离线 DPO 候选。
 
-如果个性化 Planner 失败，会切到默认 Planner，但默认 Planner 仍然接收干净 `planner_query`。
+如果个性化 TravelMind 失败，会切到默认 TravelMind，但默认 TravelMind 仍然接收干净 `travelmind_query`。
 
 ## 11. v2 数据生成对齐
 
-离线 v2 SFT/DPO 数据必须和线上协议同构。训练时的 human/input 文本应尽量等于线上真实 `planner_query`。
+离线 v2 SFT/DPO 数据必须和线上协议同构。训练时的 human/input 文本应尽量等于线上真实 `travelmind_query`。
 
 建议 SFT 样本结构：
 
 ```json
 {
-  "instruction": "根据 PlannerContext 生成严格符合 TripPlan schema 的旅行计划 JSON。",
-  "input": "{...线上真实 planner_query...}",
+  "instruction": "根据 TravelMindContext 生成严格符合 TripPlan schema 的旅行计划 JSON。",
+  "input": "{...线上真实 travelmind_query...}",
   "output": "{...TripPlan...}",
   "metadata": {
-    "compact_planner_context": "{...compact PlannerContext...}",
-    "raw_planner_context": "{...raw PlannerContext...}",
+    "compact_travelmind_context": "{...compact TravelMindContext...}",
+    "raw_travelmind_context": "{...raw TravelMindContext...}",
     "request": {}
   }
 }
@@ -452,7 +452,7 @@ PlannerContext:
 - 无严重饮食冲突。
 - 天气日期和请求日期一致。
 
-v2 DPO 应基于同一个 compact PlannerContext 生成多个自然候选：
+v2 DPO 应基于同一个 compact TravelMindContext 生成多个自然候选：
 
 ```text
 base model candidate
@@ -469,3 +469,4 @@ rejected = 低分但结构合法、自然、无显式模板痕迹的候选
 ```
 
 不要再使用带显式负面标签的模板化坏样本。
+

@@ -1,5 +1,5 @@
-### model
-model_name_or_path: /work/liweihan/wyf/helloagents-trip-planner/training/outputs/qwen25_7b/merged_dpo_260521_closing_ckpt66_for_continue_dpo
+﻿### model
+model_name_or_path: /work/liweihan/wyf/travelmind/training/outputs/qwen25_7b/merged_dpo_260521_closing_ckpt66_for_continue_dpo
 trust_remote_code: true
 flash_attn: auto
 
@@ -13,19 +13,19 @@ lora_dropout: 0.05
 lora_target: all
 pref_beta: 0.1
 pref_loss: sigmoid
-deepspeed: /work/liweihan/wyf/helloagents-trip-planner/training/configs/deepspeed/ds_z3_no_offload_config.json
+deepspeed: /work/liweihan/wyf/travelmind/training/configs/deepspeed/ds_z3_no_offload_config.json
 
 ### dataset
-dataset_dir: /work/liweihan/wyf/helloagents-trip-planner/training/data/llamafactory
-dataset: trip_planner_dpo_260520_closing_budget_clean_train
-eval_dataset: trip_planner_dpo_260520_closing_budget_clean_val
+dataset_dir: /work/liweihan/wyf/travelmind/training/data/llamafactory
+dataset: travelmind_dpo_260520_closing_budget_clean_train
+eval_dataset: travelmind_dpo_260520_closing_budget_clean_val
 template: qwen
 cutoff_len: 24576
 preprocessing_num_workers: 4
 dataloader_num_workers: 1
 
 ### output
-output_dir: /work/liweihan/wyf/helloagents-trip-planner/training/outputs/qwen25_7b/dpo_260521_closing_budget_clean_from_merged_ckpt66_r32_2epoch_lr1p5e6_ctx24576_z3nooffload_label_logits_4gpu0123
+output_dir: /work/liweihan/wyf/travelmind/training/outputs/qwen25_7b/dpo_260521_closing_budget_clean_from_merged_ckpt66_r32_2epoch_lr1p5e6_ctx24576_z3nooffload_label_logits_4gpu0123
 logging_steps: 1
 save_strategy: steps
 save_steps: 16
@@ -51,3 +51,4 @@ resume_from_checkpoint: null
 do_eval: false
 per_device_eval_batch_size: 1
 eval_strategy: "no"
+

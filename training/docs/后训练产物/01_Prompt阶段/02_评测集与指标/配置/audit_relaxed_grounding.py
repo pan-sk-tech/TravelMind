@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Side-channel audit for relaxed POI grounding.
 
 This script does not mutate rule-eval reports. It answers one diagnostic
@@ -25,7 +25,7 @@ LEGACY_SCRIPTS_DIR = PROJECT_ROOT / "training/scripts/eval"
 sys.path.insert(0, str(BACKEND_DIR))
 sys.path.insert(0, str(LEGACY_SCRIPTS_DIR))
 
-from app.planner.output import (  # noqa: E402
+from app.travelmind.output import (  # noqa: E402
     POI_CITY_PREFIXES,
     POI_NAME_SUFFIXES,
     is_lodging_breakfast_meal,
@@ -759,3 +759,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

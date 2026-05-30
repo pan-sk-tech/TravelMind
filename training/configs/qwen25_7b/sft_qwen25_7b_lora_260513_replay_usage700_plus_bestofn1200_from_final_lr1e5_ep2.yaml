@@ -1,4 +1,4 @@
-model: Qwen/Qwen2.5-7B-Instruct
+﻿model: Qwen/Qwen2.5-7B-Instruct
 trust_remote_code: true
 model_class: llm
 template: qwen3_nothink
@@ -25,8 +25,8 @@ dist_config:
   cp_mode: ulysses
   cp_size: 2
 
-train_dataset: training/data/llamafactory/generated/trip_planner_260513_replay_usage700_plus_bestofn1200_train.yaml
-eval_dataset: training/data/llamafactory/generated/trip_planner_260513_replay_usage700_plus_bestofn1200_val.yaml
+train_dataset: training/data/llamafactory/generated/travelmind_260513_replay_usage700_plus_bestofn1200_train.yaml
+eval_dataset: training/data/llamafactory/generated/travelmind_260513_replay_usage700_plus_bestofn1200_val.yaml
 
 output_dir: training/outputs/qwen25_7b/sft_260513_replay_usage700_plus_bestofn1200_from_final_r32_b32_lr1e5_ctx24576_ep2_20260513
 micro_batch_size: 1
@@ -48,3 +48,4 @@ enable_activation_checkpointing: true
 
 sample_backend: hf
 max_new_tokens: 128
+

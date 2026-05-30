@@ -1,4 +1,4 @@
-# Planner 新预算评估集重建与 SFT 预算审计
+﻿# TravelMind 新预算评估集重建与 SFT 预算审计
 
 更新时间：2026-05-07
 
@@ -6,12 +6,12 @@
 
 ## 本轮动作
 
-- 按 `Planner典型旅游预算报告.md` 的新口径调整 eval 预算构造。
+- 按 `TravelMind典型旅游预算报告.md` 的新口径调整 eval 预算构造。
 - 用低 QPS 方式重建两套评估集：
-  - standard: `training/data/planner/eval/records.jsonl`
-  - hard: `training/data/planner/eval_hard/records.jsonl`
+  - standard: `training/data/travelmind/eval/records.jsonl`
+  - hard: `training/data/travelmind/eval_hard/records.jsonl`
 - 旧评估集已归档到：
-  - `training/data/planner/archive/legacy_eval_20260507/`
+  - `training/data/travelmind/archive/legacy_eval_20260507/`
 - 离线审计已有 SFT records 的预算是否贴合新预算表：
   - `training/outputs/eval/audits/260507_v3_sft_budget_fit_audit/sft_budget_fit_audit.md`
 
@@ -64,13 +64,13 @@ budget_amount = round_100((lodging_total + person_total + shared_transport_total
 
 | 数据集 | 样本数 | 失败数 | records | 摘要 |
 |---|---:|---:|---|---|
-| standard realistic budget | 200 | 0 | `training/data/planner/eval/records.jsonl` | `training/data/planner/eval/评估集摘要.md` |
-| hard realistic budget | 300 | 0 | `training/data/planner/eval_hard/records.jsonl` | `training/data/planner/eval_hard/评估集摘要.md` |
+| standard realistic budget | 200 | 0 | `training/data/travelmind/eval/records.jsonl` | `training/data/travelmind/eval/评估集摘要.md` |
+| hard realistic budget | 300 | 0 | `training/data/travelmind/eval_hard/records.jsonl` | `training/data/travelmind/eval_hard/评估集摘要.md` |
 
 数据集说明：
 
-- standard: `training/data/planner/eval/数据集说明.md`
-- hard: `training/data/planner/eval_hard/数据集说明.md`
+- standard: `training/data/travelmind/eval/数据集说明.md`
+- hard: `training/data/travelmind/eval_hard/数据集说明.md`
 
 ## 新旧预算分布对比
 
@@ -108,7 +108,7 @@ budget_amount = round_100((lodging_total + person_total + shared_transport_total
 审计对象：
 
 ```text
-training/data/planner/sft/records.jsonl
+training/data/travelmind/sft/records.jsonl
 ```
 
 该路径是历史生成时的原始位置；2026-05-08 后旧 SFT 已归档，不再作为训练入口。
@@ -155,3 +155,4 @@ training/outputs/eval/audits/260507_v3_sft_budget_fit_audit/audit_rows.jsonl
 - 后续新 SFT 从 realbudget pipeline 重建，按 smoke 20 -> 100 -> 1000 的节奏逐轮审计。
 - 新评估集可以作为下一轮 base/sftv1/legacy_a/legacy_b 横评输入。
 - 若要把新评估集升级为主路径，建议先人工抽查每个档位 5-10 条 prompt，确认预算自由文本和候选池质量符合预期。
+

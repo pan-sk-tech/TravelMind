@@ -1,0 +1,3 @@
+{"id":"travelmind_eval_001","city":"北京","days":3,"budget":3000,"preferences":["历史文化","博物馆","城市漫步"],"transportation":"地铁公交","checks":["预算总额不超过软约束上限","至少包含2个历史文化或博物馆景点","每日景点数量在1-3个之间","天气信息逐日对应"]}
+{"id":"travelmind_eval_002","city":"杭州","days":2,"budget":1800,"preferences":["自然风光","休闲","避开人群"],"transportation":"公共交通","checks":["路线避免明显跨区跳跃","包含西湖或同类自然风光候选","餐饮预算按人数汇总","整体建议解释预算取舍"]}
+{"id":"travelmind_eval_003","city":"成都","days":4,"budget":5200,"preferences":["亲子友好","博物馆","美食"],"transportation":"打车/网约车","checks":["亲子友好偏好被显式满足","雨天或高温天气优先安排室内点","每日三餐可解析","酒店住宿费用按晚数计算"]}

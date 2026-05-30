@@ -3,15 +3,15 @@
     <a-layout class="app-layout">
       <a-layout-header class="app-header">
         <div class="app-brand">
-          <span class="brand-mark">H</span>
-          <span>HelloAgents 智能旅行助手</span>
+          <span class="brand-mark">TM</span>
+          <span>TravelMind 个性化旅行规划 Agent</span>
         </div>
       </a-layout-header>
       <a-layout-content class="app-content">
         <router-view />
       </a-layout-content>
       <a-layout-footer class="app-footer">
-        HelloAgents 智能旅行助手 ©2026
+        TravelMind · Personalized Travel Planning Agent ©2026
       </a-layout-footer>
     </a-layout>
   </div>
@@ -54,7 +54,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
+  width: 40px;
   height: 32px;
   border-radius: 8px;
   background: #0f766e;

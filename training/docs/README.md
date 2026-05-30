@@ -1,4 +1,4 @@
-# 训练文档索引
+﻿# 训练文档索引
 
 更新时间：2026-05-22
 
@@ -26,5 +26,6 @@
 ## 不在这里维护的内容
 
 - 公开评测结论入口在 [../outputs/eval/README.md](../outputs/eval/README.md)。
-- 冻结评估集说明在 [../data/planner/README.md](../data/planner/README.md)。
+- 冻结评估集说明在 [../data/travelmind/README.md](../data/travelmind/README.md)。
 - 本地草稿、临时日志和大体积生成产物默认不进入公开索引。
+

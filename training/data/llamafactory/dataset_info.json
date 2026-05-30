@@ -1,18 +1,18 @@
-{
-  "trip_planner_sft_260511_mimo_budget_usage_validate100_w50_dedup100_budget_clean_train": {
-    "file_name": "generated/trip_planner_sft_260511_mimo_budget_usage_validate100_w50_dedup100_budget_clean_train.json"
+﻿{
+  "travelmind_sft_260511_mimo_budget_usage_validate100_w50_dedup100_budget_clean_train": {
+    "file_name": "generated/travelmind_sft_260511_mimo_budget_usage_validate100_w50_dedup100_budget_clean_train.json"
   },
-  "trip_planner_sft_260511_mimo_budget_usage_validate100_w50_dedup100_budget_clean_val": {
-    "file_name": "generated/trip_planner_sft_260511_mimo_budget_usage_validate100_w50_dedup100_budget_clean_val.json"
+  "travelmind_sft_260511_mimo_budget_usage_validate100_w50_dedup100_budget_clean_val": {
+    "file_name": "generated/travelmind_sft_260511_mimo_budget_usage_validate100_w50_dedup100_budget_clean_val.json"
   },
-  "trip_planner_bestofn_260512_anti_leak1200_vllm23_w8_sft_train": {
-    "file_name": "trip_planner_bestofn_260512_anti_leak1200_vllm23_w8_sft_train.json"
+  "travelmind_bestofn_260512_anti_leak1200_vllm23_w8_sft_train": {
+    "file_name": "travelmind_bestofn_260512_anti_leak1200_vllm23_w8_sft_train.json"
   },
-  "trip_planner_bestofn_260512_anti_leak1200_vllm23_w8_sft_val": {
-    "file_name": "trip_planner_bestofn_260512_anti_leak1200_vllm23_w8_sft_val.json"
+  "travelmind_bestofn_260512_anti_leak1200_vllm23_w8_sft_val": {
+    "file_name": "travelmind_bestofn_260512_anti_leak1200_vllm23_w8_sft_val.json"
   },
-  "trip_planner_bestofn_260512_anti_leak1200_vllm23_w8_pair_train": {
-    "file_name": "trip_planner_bestofn_260512_anti_leak1200_vllm23_w8_pair_train.json",
+  "travelmind_bestofn_260512_anti_leak1200_vllm23_w8_pair_train": {
+    "file_name": "travelmind_bestofn_260512_anti_leak1200_vllm23_w8_pair_train.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -21,8 +21,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_bestofn_260512_anti_leak1200_vllm23_w8_pair_val": {
-    "file_name": "trip_planner_bestofn_260512_anti_leak1200_vllm23_w8_pair_val.json",
+  "travelmind_bestofn_260512_anti_leak1200_vllm23_w8_pair_val": {
+    "file_name": "travelmind_bestofn_260512_anti_leak1200_vllm23_w8_pair_val.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -31,8 +31,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260516_bestofn1200_filtered_train": {
-    "file_name": "generated/trip_planner_dpo_260516_bestofn1200_filtered_train.json",
+  "travelmind_dpo_260516_bestofn1200_filtered_train": {
+    "file_name": "generated/travelmind_dpo_260516_bestofn1200_filtered_train.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -41,8 +41,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260516_bestofn1200_filtered_val": {
-    "file_name": "generated/trip_planner_dpo_260516_bestofn1200_filtered_val.json",
+  "travelmind_dpo_260516_bestofn1200_filtered_val": {
+    "file_name": "generated/travelmind_dpo_260516_bestofn1200_filtered_val.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -51,8 +51,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260516_bestofn1200_filtered_smoke_train": {
-    "file_name": "generated/trip_planner_dpo_260516_bestofn1200_filtered_smoke_train.json",
+  "travelmind_dpo_260516_bestofn1200_filtered_smoke_train": {
+    "file_name": "generated/travelmind_dpo_260516_bestofn1200_filtered_smoke_train.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -61,8 +61,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260516_bestofn1200_filtered_smoke_val": {
-    "file_name": "generated/trip_planner_dpo_260516_bestofn1200_filtered_smoke_val.json",
+  "travelmind_dpo_260516_bestofn1200_filtered_smoke_val": {
+    "file_name": "generated/travelmind_dpo_260516_bestofn1200_filtered_smoke_val.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -71,8 +71,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260516_bestofn1200_filtered_long20_train": {
-    "file_name": "generated/trip_planner_dpo_260516_bestofn1200_filtered_long20_train.json",
+  "travelmind_dpo_260516_bestofn1200_filtered_long20_train": {
+    "file_name": "generated/travelmind_dpo_260516_bestofn1200_filtered_long20_train.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -81,8 +81,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260516_bestofn1200_filtered_long20_val": {
-    "file_name": "generated/trip_planner_dpo_260516_bestofn1200_filtered_long20_val.json",
+  "travelmind_dpo_260516_bestofn1200_filtered_long20_val": {
+    "file_name": "generated/travelmind_dpo_260516_bestofn1200_filtered_long20_val.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -91,8 +91,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260517_high_conf_train": {
-    "file_name": "generated/trip_planner_dpo_260517_high_conf_train.json",
+  "travelmind_dpo_260517_high_conf_train": {
+    "file_name": "generated/travelmind_dpo_260517_high_conf_train.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -101,8 +101,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260517_high_conf_val": {
-    "file_name": "generated/trip_planner_dpo_260517_high_conf_val.json",
+  "travelmind_dpo_260517_high_conf_val": {
+    "file_name": "generated/travelmind_dpo_260517_high_conf_val.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -111,8 +111,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260517_high_conf_strict_train": {
-    "file_name": "generated/trip_planner_dpo_260517_high_conf_strict_train.json",
+  "travelmind_dpo_260517_high_conf_strict_train": {
+    "file_name": "generated/travelmind_dpo_260517_high_conf_strict_train.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -121,8 +121,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260517_high_conf_strict_val": {
-    "file_name": "generated/trip_planner_dpo_260517_high_conf_strict_val.json",
+  "travelmind_dpo_260517_high_conf_strict_val": {
+    "file_name": "generated/travelmind_dpo_260517_high_conf_strict_val.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -131,8 +131,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260517_failure_driven600_rule_mixed_enriched_train": {
-    "file_name": "trip_planner_dpo_260517_failure_driven600_rule_mixed_enriched_train.json",
+  "travelmind_dpo_260517_failure_driven600_rule_mixed_enriched_train": {
+    "file_name": "travelmind_dpo_260517_failure_driven600_rule_mixed_enriched_train.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -141,8 +141,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260517_failure_driven600_rule_mixed_enriched_val": {
-    "file_name": "trip_planner_dpo_260517_failure_driven600_rule_mixed_enriched_val.json",
+  "travelmind_dpo_260517_failure_driven600_rule_mixed_enriched_val": {
+    "file_name": "travelmind_dpo_260517_failure_driven600_rule_mixed_enriched_val.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -151,8 +151,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260517_fd600_planner_soft_direct402_train": {
-    "file_name": "generated/trip_planner_dpo_260517_fd600_planner_soft_direct402_train.json",
+  "travelmind_dpo_260517_fd600_travelmind_soft_direct402_train": {
+    "file_name": "generated/travelmind_dpo_260517_fd600_travelmind_soft_direct402_train.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -161,8 +161,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260517_fd600_planner_soft_direct402_val": {
-    "file_name": "generated/trip_planner_dpo_260517_fd600_planner_soft_direct402_val.json",
+  "travelmind_dpo_260517_fd600_travelmind_soft_direct402_val": {
+    "file_name": "generated/travelmind_dpo_260517_fd600_travelmind_soft_direct402_val.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -171,8 +171,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260518_planner_soft2400_clean_train": {
-    "file_name": "generated/trip_planner_dpo_260518_planner_soft2400_clean_train.json",
+  "travelmind_dpo_260518_travelmind_soft2400_clean_train": {
+    "file_name": "generated/travelmind_dpo_260518_travelmind_soft2400_clean_train.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -181,8 +181,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260518_planner_soft2400_clean_val": {
-    "file_name": "generated/trip_planner_dpo_260518_planner_soft2400_clean_val.json",
+  "travelmind_dpo_260518_travelmind_soft2400_clean_val": {
+    "file_name": "generated/travelmind_dpo_260518_travelmind_soft2400_clean_val.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -191,8 +191,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260518_planner_soft2400_clean_single_error_train": {
-    "file_name": "generated/trip_planner_dpo_260518_planner_soft2400_clean_single_error_train.json",
+  "travelmind_dpo_260518_travelmind_soft2400_clean_single_error_train": {
+    "file_name": "generated/travelmind_dpo_260518_travelmind_soft2400_clean_single_error_train.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -201,8 +201,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260518_planner_soft2400_clean_single_error_val": {
-    "file_name": "generated/trip_planner_dpo_260518_planner_soft2400_clean_single_error_val.json",
+  "travelmind_dpo_260518_travelmind_soft2400_clean_single_error_val": {
+    "file_name": "generated/travelmind_dpo_260518_travelmind_soft2400_clean_single_error_val.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -211,8 +211,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260518_planner_soft2400_clean_two_error_train": {
-    "file_name": "generated/trip_planner_dpo_260518_planner_soft2400_clean_two_error_train.json",
+  "travelmind_dpo_260518_travelmind_soft2400_clean_two_error_train": {
+    "file_name": "generated/travelmind_dpo_260518_travelmind_soft2400_clean_two_error_train.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -221,8 +221,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260518_planner_soft2400_clean_two_error_val": {
-    "file_name": "generated/trip_planner_dpo_260518_planner_soft2400_clean_two_error_val.json",
+  "travelmind_dpo_260518_travelmind_soft2400_clean_two_error_val": {
+    "file_name": "generated/travelmind_dpo_260518_travelmind_soft2400_clean_two_error_val.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -231,8 +231,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260518_planner_soft2400_clean_one_two_error_core_train": {
-    "file_name": "generated/trip_planner_dpo_260518_planner_soft2400_clean_one_two_error_core_train.json",
+  "travelmind_dpo_260518_travelmind_soft2400_clean_one_two_error_core_train": {
+    "file_name": "generated/travelmind_dpo_260518_travelmind_soft2400_clean_one_two_error_core_train.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -241,8 +241,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260518_planner_soft2400_clean_one_two_error_core_val": {
-    "file_name": "generated/trip_planner_dpo_260518_planner_soft2400_clean_one_two_error_core_val.json",
+  "travelmind_dpo_260518_travelmind_soft2400_clean_one_two_error_core_val": {
+    "file_name": "generated/travelmind_dpo_260518_travelmind_soft2400_clean_one_two_error_core_val.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -251,8 +251,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260518_planner_soft2400_clean_exact_three_error_train": {
-    "file_name": "generated/trip_planner_dpo_260518_planner_soft2400_clean_exact_three_error_train.json",
+  "travelmind_dpo_260518_travelmind_soft2400_clean_exact_three_error_train": {
+    "file_name": "generated/travelmind_dpo_260518_travelmind_soft2400_clean_exact_three_error_train.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -261,8 +261,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260518_planner_soft2400_clean_exact_three_error_val": {
-    "file_name": "generated/trip_planner_dpo_260518_planner_soft2400_clean_exact_three_error_val.json",
+  "travelmind_dpo_260518_travelmind_soft2400_clean_exact_three_error_val": {
+    "file_name": "generated/travelmind_dpo_260518_travelmind_soft2400_clean_exact_three_error_val.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -271,8 +271,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260518_planner_soft2400_clean_three_plus_error_train": {
-    "file_name": "generated/trip_planner_dpo_260518_planner_soft2400_clean_three_plus_error_train.json",
+  "travelmind_dpo_260518_travelmind_soft2400_clean_three_plus_error_train": {
+    "file_name": "generated/travelmind_dpo_260518_travelmind_soft2400_clean_three_plus_error_train.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -281,8 +281,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260518_planner_soft2400_clean_three_plus_error_val": {
-    "file_name": "generated/trip_planner_dpo_260518_planner_soft2400_clean_three_plus_error_val.json",
+  "travelmind_dpo_260518_travelmind_soft2400_clean_three_plus_error_val": {
+    "file_name": "generated/travelmind_dpo_260518_travelmind_soft2400_clean_three_plus_error_val.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -291,8 +291,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260518_planner_soft2400_clean_four_plus_error_train": {
-    "file_name": "generated/trip_planner_dpo_260518_planner_soft2400_clean_four_plus_error_train.json",
+  "travelmind_dpo_260518_travelmind_soft2400_clean_four_plus_error_train": {
+    "file_name": "generated/travelmind_dpo_260518_travelmind_soft2400_clean_four_plus_error_train.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -301,8 +301,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260518_planner_soft2400_clean_four_plus_error_val": {
-    "file_name": "generated/trip_planner_dpo_260518_planner_soft2400_clean_four_plus_error_val.json",
+  "travelmind_dpo_260518_travelmind_soft2400_clean_four_plus_error_val": {
+    "file_name": "generated/travelmind_dpo_260518_travelmind_soft2400_clean_four_plus_error_val.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -311,8 +311,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260518_core1418_plus_direct402_train": {
-    "file_name": "generated/trip_planner_dpo_260518_core1418_plus_direct402_train.json",
+  "travelmind_dpo_260518_core1418_plus_direct402_train": {
+    "file_name": "generated/travelmind_dpo_260518_core1418_plus_direct402_train.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -321,8 +321,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260518_core1418_plus_direct402_val": {
-    "file_name": "generated/trip_planner_dpo_260518_core1418_plus_direct402_val.json",
+  "travelmind_dpo_260518_core1418_plus_direct402_val": {
+    "file_name": "generated/travelmind_dpo_260518_core1418_plus_direct402_val.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -331,8 +331,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260519_planner_soft2400_clean_plus_direct402_train": {
-    "file_name": "generated/trip_planner_dpo_260519_planner_soft2400_clean_plus_direct402_train.json",
+  "travelmind_dpo_260519_travelmind_soft2400_clean_plus_direct402_train": {
+    "file_name": "generated/travelmind_dpo_260519_travelmind_soft2400_clean_plus_direct402_train.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -341,8 +341,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260519_planner_soft2400_clean_plus_direct402_val": {
-    "file_name": "generated/trip_planner_dpo_260519_planner_soft2400_clean_plus_direct402_val.json",
+  "travelmind_dpo_260519_travelmind_soft2400_clean_plus_direct402_val": {
+    "file_name": "generated/travelmind_dpo_260519_travelmind_soft2400_clean_plus_direct402_val.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -351,8 +351,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260520_closing_budget_clean_train": {
-    "file_name": "generated/trip_planner_dpo_260520_closing_budget_clean_train.json",
+  "travelmind_dpo_260520_closing_budget_clean_train": {
+    "file_name": "generated/travelmind_dpo_260520_closing_budget_clean_train.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -361,8 +361,8 @@
       "rejected": "rejected"
     }
   },
-  "trip_planner_dpo_260520_closing_budget_clean_val": {
-    "file_name": "generated/trip_planner_dpo_260520_closing_budget_clean_val.json",
+  "travelmind_dpo_260520_closing_budget_clean_val": {
+    "file_name": "generated/travelmind_dpo_260520_closing_budget_clean_val.json",
     "ranking": true,
     "formatting": "sharegpt",
     "columns": {
@@ -372,3 +372,4 @@
     }
   }
 }
+

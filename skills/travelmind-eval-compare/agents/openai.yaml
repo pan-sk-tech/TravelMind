@@ -1,0 +1,7 @@
+﻿interface:
+  display_name: "TravelMind Eval Compare"
+  short_description: "Run and compare TravelMind travelmind evals."
+  default_prompt: "Run or compare TravelMind standard/hard evals for travelmind-agent using the fixed records, rule metrics, slices, optional judge, and the canonical full-report Markdown format."
+
+
+

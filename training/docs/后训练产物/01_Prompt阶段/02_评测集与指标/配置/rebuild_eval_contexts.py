@@ -1,8 +1,8 @@
-"""Rebuild frozen eval PlannerContext snapshots.
+﻿"""Rebuild frozen eval TravelMindContext snapshots.
 
 This keeps the request distribution and record_id stable, but recollects the
-PlannerContext with the current backend retrieval stack, then rebuilds the
-compact context and Planner prompt. Use it when POI retrieval, pricing hints,
+TravelMindContext with the current backend retrieval stack, then rebuilds the
+compact context and TravelMind prompt. Use it when POI retrieval, pricing hints,
 weather alignment, or context policy changes and old frozen eval records should
 move to the new backend behavior without resampling requests.
 """
@@ -25,7 +25,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[4]
 SCRIPTS_DIR = PROJECT_ROOT / "training" / "scripts"
 LEGACY_SCRIPTS_DIR = SCRIPTS_DIR / "legacy"
 EVAL_SCRIPTS_DIR = Path(__file__).resolve().parent
-DATA_SCRIPTS_DIR = SCRIPTS_DIR / "planner" / "data"
+DATA_SCRIPTS_DIR = SCRIPTS_DIR / "travelmind" / "data"
 BACKEND_DIR = PROJECT_ROOT / "backend"
 sys.path[:0] = [
     str(EVAL_SCRIPTS_DIR),
@@ -44,15 +44,15 @@ from build_eval_set import (  # noqa: E402
     write_summary_markdown,
 )
 from generate_sft_data import (  # noqa: E402
-    PLANNER_AGENT_PROMPT,
+    TRAVELMIND_AGENT_PROMPT,
     apply_budget_fit_policy,
     budget_context_gate_audit,
-    build_planner_query,
+    build_travelmind_query,
     date_bucket,
     get_worker_context_builder,
 )
 from app.models.schemas import TripRequest  # noqa: E402
-from app.planner.amap import set_amap_qps_limit  # noqa: E402
+from app.travelmind.amap import set_amap_qps_limit  # noqa: E402
 
 
 DEFAULT_SOURCE_LABEL = "260511_high_end_poi_context_rebuild"
@@ -69,21 +69,21 @@ def rebuild_one_record(
     builder = get_worker_context_builder(amap_api_key, args.historical_weather_provider)
 
     started_at = time.perf_counter()
-    planner_context = builder.collect(request)
-    apply_budget_fit_policy(planner_context, request)
-    budget_audit = budget_context_gate_audit(request, planner_context)
-    compact_context = builder.compact_for_planner(planner_context)
-    planner_query = build_planner_query(builder, request, planner_context)
+    travelmind_context = builder.collect(request)
+    apply_budget_fit_policy(travelmind_context, request)
+    budget_audit = budget_context_gate_audit(request, travelmind_context)
+    compact_context = builder.compact_for_travelmind(travelmind_context)
+    travelmind_query = build_travelmind_query(builder, request, travelmind_context)
     elapsed = time.perf_counter() - started_at
 
     compact_context_text = json.dumps(compact_context, ensure_ascii=False)
-    raw_context_text = json.dumps(planner_context, ensure_ascii=False)
+    raw_context_text = json.dumps(travelmind_context, ensure_ascii=False)
 
     rebuilt = dict(record)
-    rebuilt["system_prompt"] = PLANNER_AGENT_PROMPT
-    rebuilt["planner_query"] = planner_query
-    rebuilt["compact_planner_context"] = compact_context
-    rebuilt["planner_context"] = planner_context
+    rebuilt["system_prompt"] = TRAVELMIND_AGENT_PROMPT
+    rebuilt["travelmind_query"] = travelmind_query
+    rebuilt["compact_travelmind_context"] = compact_context
+    rebuilt["travelmind_context"] = travelmind_context
     rebuilt["context_rebuilt_at"] = rebuilt_at
     rebuilt["context_rebuild_label"] = args.source_label
     rebuilt["context_rebuild_source_records"] = str(args.input_records)
@@ -93,13 +93,13 @@ def rebuild_one_record(
     metadata.update(
         {
             "elapsed_seconds": round(elapsed, 3),
-            "prompt_chars": len(planner_query),
+            "prompt_chars": len(travelmind_query),
             "compact_context_chars": len(compact_context_text),
             "raw_context_chars": len(raw_context_text),
-            "weather_provider": weather_provider(planner_context),
+            "weather_provider": weather_provider(travelmind_context),
             "date_bucket": date_bucket(request.model_dump()),
-            "tool_counts": tool_counts(planner_context),
-            "tool_status": (planner_context.get("tool_snapshot") or {}).get("tool_status", {}),
+            "tool_counts": tool_counts(travelmind_context),
+            "tool_status": (travelmind_context.get("tool_snapshot") or {}).get("tool_status", {}),
             "eval_metrics_version": "current",
             "expected_output_schema": "TripPlan",
             "budget_context_audit": budget_audit,
@@ -211,7 +211,7 @@ def write_rebuild_notes(path: Path, records: list[dict[str, Any]], summary: dict
             "## Notes",
             "",
             "- Requests and record_id values are preserved from the source records.",
-            "- PlannerContext, compact PlannerContext, system prompt and planner_query are rebuilt with the current backend code.",
+            "- TravelMindContext, compact TravelMindContext, system prompt and travelmind_query are rebuilt with the current backend code.",
             "- Use these rebuilt records for future model generation and rule eval when comparing runs after retrieval changes.",
         ]
     )
@@ -230,7 +230,7 @@ def guard_output_path(args: argparse.Namespace) -> None:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Rebuild frozen eval PlannerContext snapshots.")
+    parser = argparse.ArgumentParser(description="Rebuild frozen eval TravelMindContext snapshots.")
     parser.add_argument("--input-records", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--workers", type=int, default=2)
@@ -368,3 +368,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

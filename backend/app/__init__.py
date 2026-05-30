@@ -1,3 +1,5 @@
-"""HelloAgents智能旅行助手 - 后端应用"""
+﻿"""TravelMind personalized travel planning agent backend."""
 
 __version__ = "1.0.0"
+
+

@@ -1,4 +1,4 @@
-"""高德地图MCP服务封装"""
+﻿"""高德地图MCP服务封装"""
 
 from typing import List, Dict, Any, Optional
 from hello_agents.tools import MCPTool
@@ -267,3 +267,5 @@ def get_amap_service() -> AmapService:
         _amap_service = AmapService()
 
     return _amap_service
+
+

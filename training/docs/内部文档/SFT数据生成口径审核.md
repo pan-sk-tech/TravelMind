@@ -1,10 +1,10 @@
-# Planner SFT 数据生成口径审核
+﻿# TravelMind SFT 数据生成口径审核
 
-这份文档在正式造 Planner SFT 数据前使用，用来对齐三件事：请求分布、Planner 生成 prompt、评测/清洗口径。
+这份文档在正式造 TravelMind SFT 数据前使用，用来对齐三件事：请求分布、TravelMind 生成 prompt、评测/清洗口径。
 
 ## 1. 当前结论
 
-当前 Planner SFT 数据生成可以进入 smoke 阶段，但必须坚持这些口径：
+当前 TravelMind SFT 数据生成可以进入 smoke 阶段，但必须坚持这些口径：
 
 - 请求端预算是整趟总预算。
 - 酒店 `hotel.estimated_cost` 表示单房每晚价。
@@ -20,7 +20,7 @@
 
 ## 2. 请求分布
 
-来源：`training/scripts/planner/data/generate_sft_data.py` controlled request。
+来源：`training/scripts/travelmind/data/generate_sft_data.py` controlled request。
 
 ### 同行类型
 
@@ -109,7 +109,7 @@ budget_amount = round_to_100((daily_total + lodging_total) * city_factor)
 
 ### 餐饮候选召回
 
-餐饮候选来自 `food_query_groups` 分桶召回。当前主线不使用 topk context；`compact_for_planner` 只裁字段，不裁剪 `food_pois` 数量。
+餐饮候选来自 `food_query_groups` 分桶召回。当前主线不使用 topk context；`compact_for_travelmind` 只裁字段，不裁剪 `food_pois` 数量。
 
 - `food_base` 是兜底餐饮池，默认返回 20 个候选。
 - `food_breakfast` 是早餐池，默认返回 8 个候选，关键词覆盖早餐/早点/早茶/包子/粥/面馆/糕点/咖啡；有明确饮食约束时会优先尝试“清真早餐”等约束早餐。
@@ -117,9 +117,9 @@ budget_amount = round_to_100((daily_total + lodging_total) * city_factor)
 - 合并后的 `food_pois` 总上限默认是 40。
 - 普通朋友/情侣/独行等请求即使没有明确餐饮偏好，也至少应包含 `food_breakfast` + `food_base` 两个分桶，分别覆盖早餐和 3-5 天 lunch/dinner 候选余量。
 
-## 3. Planner 生成 Prompt 口径
+## 3. TravelMind 生成 Prompt 口径
 
-来源：`backend/app/agents/prompts.py::PLANNER_AGENT_PROMPT`。
+来源：`backend/app/agents/prompts.py::TRAVELMIND_AGENT_PROMPT`。
 
 和评测强相关的硬要求：
 
@@ -146,7 +146,7 @@ budget_amount = round_to_100((daily_total + lodging_total) * city_factor)
 
 ## 4. SFT 生成后处理
 
-来源：`training/scripts/planner/data/generate_sft_data.py::recompute_v3_budget`。
+来源：`training/scripts/travelmind/data/generate_sft_data.py::recompute_v3_budget`。
 
 强模型输出通过 schema 后，会被重新计算预算：
 
@@ -162,7 +162,7 @@ total = total_hotels + total_attractions + total_meals + total_transportation
 
 ## 5. SFT 训练样本校验
 
-来源：`training/scripts/planner/data/generate_sft_data.py::validate_v3_training_plan`。
+来源：`training/scripts/travelmind/data/generate_sft_data.py::validate_v3_training_plan`。
 
 当前训练样本必须通过：
 
@@ -219,4 +219,5 @@ DPO soft pass 额外包含：
 - `meal_cost_scale_ok` 不建议放进最严格 `sft_hard_pass`，但可用于清洗明显脏样本。
 - 餐饮多样性属于 DPO/软质量，不建议作为 SFT 主过滤项。
 - `budget.total` 精确加总由工程后处理保证；训练数据会写正确值，但评测分析时不要把 prompt-only 的算术失败当成唯一瓶颈。
-- 如果使用 `--request-source llm`，LLM 请求 prompt 已允许 `family_mixed`，但正式 Planner SFT 建议先用 `controlled`，减少分布漂移。
+- 如果使用 `--request-source llm`，LLM 请求 prompt 已允许 `family_mixed`，但正式 TravelMind SFT 建议先用 `controlled`，减少分布漂移。
+

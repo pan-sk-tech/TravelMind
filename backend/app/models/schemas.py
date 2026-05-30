@@ -1,4 +1,4 @@
-"""数据模型定义"""
+﻿"""数据模型定义"""
 
 from typing import List, Optional, Union
 from pydantic import BaseModel, Field, field_validator, model_validator
@@ -247,3 +247,5 @@ class ErrorResponse(BaseModel):
     success: bool = Field(default=False, description="是否成功")
     message: str = Field(..., description="错误消息")
     error_code: Optional[str] = Field(default=None, description="错误代码")
+
+

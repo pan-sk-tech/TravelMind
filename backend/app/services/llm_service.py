@@ -1,4 +1,4 @@
-"""LLM服务模块"""
+﻿"""LLM服务模块"""
 
 import os
 from contextlib import contextmanager
@@ -9,7 +9,7 @@ from ..config import get_settings
 
 # 全局LLM实例
 _llm_instance = None
-_planner_llm_instance = None
+_travelmind_llm_instance = None
 
 
 @contextmanager
@@ -52,27 +52,27 @@ def get_llm() -> HelloAgentsLLM:
     return _llm_instance
 
 
-def get_planner_llm() -> HelloAgentsLLM:
+def get_travelmind_llm() -> HelloAgentsLLM:
     """
     获取最终行程规划 LLM。
 
-    默认返回通用 LLM；当 USE_PERSONALIZED_PLANNER=true 且配置完整时，
-    仅 planner agent 使用个性化微调模型。
+    默认返回通用 LLM；当 USE_PERSONALIZED_TRAVELMIND=true 且配置完整时，
+    仅 TravelMind Agent 使用个性化微调模型。
     """
-    global _planner_llm_instance
+    global _travelmind_llm_instance
 
     settings = get_settings()
-    if not settings.use_personalized_planner:
+    if not settings.use_personalized_travelmind:
         return get_llm()
 
-    if _planner_llm_instance is None:
+    if _travelmind_llm_instance is None:
         model = os.getenv("PERSONALIZED_LLM_MODEL_ID") or settings.personalized_llm_model
         base_url = settings.personalized_llm_base_url
         api_key = settings.personalized_llm_api_key or "EMPTY"
         provider = settings.personalized_llm_provider or "openai"
 
         if not model or not base_url:
-            print("⚠️  个性化 Planner 配置不完整，将使用默认 LLM")
+            print("⚠️  个性化 TravelMind 配置不完整，将使用默认 LLM")
             return get_llm()
 
         overrides = {
@@ -85,18 +85,23 @@ def get_planner_llm() -> HelloAgentsLLM:
             "LLM_PROVIDER": provider,
         }
         with _temporary_env(overrides):
-            _planner_llm_instance = HelloAgentsLLM()
+            _travelmind_llm_instance = HelloAgentsLLM()
 
-        print("✅ 个性化 Planner LLM 初始化成功")
-        print(f"   提供商: {_planner_llm_instance.provider}")
-        print(f"   模型: {_planner_llm_instance.model}")
+        print("✅ 个性化 TravelMind LLM 初始化成功")
+        print(f"   提供商: {_travelmind_llm_instance.provider}")
+        print(f"   模型: {_travelmind_llm_instance.model}")
         print(f"   Base URL: {base_url}")
 
-    return _planner_llm_instance
+    return _travelmind_llm_instance
+
+
 
 
 def reset_llm():
     """重置LLM实例(用于测试或重新配置)"""
-    global _llm_instance, _planner_llm_instance
+    global _llm_instance, _travelmind_llm_instance
     _llm_instance = None
-    _planner_llm_instance = None
+    _travelmind_llm_instance = None
+
+
+

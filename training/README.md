@@ -1,8 +1,8 @@
-# 后训练与评测说明
+﻿# 后训练与评测说明
 
 本目录保存旅行助手的后训练资产。公开仓库只保留当前主线：训练数据、脚本、协议文档、轻量评测报告和可复现配置。历史数据、旧脚本、废弃 prompt 消融、过程日志、模型权重、checkpoint 和大规模生成明细不会上传。
 
-当前目标不是让模型凭空知道更多旅行事实，而是让后端先把事实和约束编译成结构化 `PlannerContext`，再让 Planner 模型稳定生成符合业务协议的 `TripPlan JSON`。
+当前目标不是让模型凭空知道更多旅行事实，而是让后端先把事实和约束编译成结构化 `TravelMindContext`，再让 TravelMind Agent稳定生成符合业务协议的 `TripPlan JSON`。
 
 更新时间：2026-05-22。文件结构和生命周期规则见 [STRUCTURE.md](STRUCTURE.md)，长期文档索引见 [docs/README.md](docs/README.md)，本机完整后训练资产地图见 [docs/后训练产物/本地资产索引.md](docs/后训练产物/本地资产索引.md)。
 
@@ -11,8 +11,8 @@
 ```text
 前端收集用户意图
   -> 后端结构化人数、预算、偏好、住宿和工具候选
-  -> PlannerContext 冻结模型可见事实
-  -> Planner 模型生成 TripPlan JSON
+  -> TravelMindContext 冻结模型可见事实
+  -> TravelMind Agent生成 TripPlan JSON
   -> 规则评测脚本检查 schema、grounding、预算和偏好指标
 ```
 
@@ -38,15 +38,15 @@ training/
 ├── configs/              # 按模型分组的训练配置
 ├── data/
 │   ├── llamafactory/     # LLaMA-Factory 数据入口
-│   └── planner/               # 当前训练、评估和票价数据
+│   └── travelmind/               # 当前训练、评估和票价数据
 ├── docs/                 # 教程、内部协议、指标、预算报告和 DPO 计划
 ├── outputs/eval/         # 轻量评测报告、comparison 和 manifest
 ├── prompts/              # 数据生成 prompt
 ├── scripts/
 │   ├── shared/           # 公共 helper 和 LLM 客户端
-│   ├── serving/          # 本地 Planner 模型服务
+│   ├── serving/          # 本地 TravelMind Agent服务
 │   ├── validation/       # TripPlan schema 校验
-│   └── planner/               # 当前脚本按 data/eval/audit/pricing/training 分组
+│   └── travelmind/               # 当前脚本按 data/eval/audit/pricing/training 分组
 └── requirements-training.txt
 ```
 
@@ -66,7 +66,7 @@ training/
 - `docs/内部文档/典型旅游预算报告.md`
 - `docs/内部文档/预算分档与实际数据预算对比.md`
 - `docs/内部文档/新预算评估集重建与SFT预算审计.md`
-- `data/planner/SFT已归档说明.md`
+- `data/travelmind/SFT已归档说明.md`
 - `outputs/eval/README.md`
 - `outputs/eval/reports/260512_bestofn_replay_extended_w10/bestofn_replay_extended_comparison.md`
 
@@ -91,7 +91,7 @@ DATA_GEN_THINKING=false
 安装依赖：
 
 ```bash
-cd helloagents-trip-planner
+cd travelmind-agent
 python -m venv .venv-training-py311
 source .venv-training-py311/bin/activate
 pip install -r training/requirements-training.txt
@@ -103,7 +103,7 @@ pip install -r training/requirements-training.txt
 
 2026-05-08 之前生成的 SFT 数据已经全量归档，不再作为当前训练入口：
 
-- 旧 `training/data/planner/sft/` 和 `training/data/planner/sft_current/` 已移入 `training/data/planner/archive/`。
+- 旧 `training/data/travelmind/sft/` 和 `training/data/travelmind/sft_current/` 已移入 `training/data/travelmind/archive/`。
 - 旧 LLaMAFactory SFT 导出已移入 `training/data/llamafactory/archive/`。
 - `training/data/llamafactory/dataset_info.json` 只保留当前明确训练入口；大体积 train/val JSON/YAML 放在 `training/data/llamafactory/generated/`，默认由 `.gitignore` 排除。
 
@@ -113,14 +113,14 @@ pip install -r training/requirements-training.txt
 smoke 20 -> 审计 -> 100 条 -> 审计 -> 1000 条 -> 导出 LLaMAFactory
 ```
 
-新数据必须写入明确的 run 目录，例如 `training/data/planner/sft_runs/<YYMMDD>_<run_slug>/`，不再混写旧 `training/data/planner/sft/`。外部强模型调用必须记录 provider 返回的 `response.usage`，并保留 run manifest，避免 token 成本不可追踪。
+新数据必须写入明确的 run 目录，例如 `training/data/travelmind/sft_runs/<YYMMDD>_<run_slug>/`，不再混写旧 `training/data/travelmind/sft/`。外部强模型调用必须记录 provider 返回的 `response.usage`，并保留 run manifest，避免 token 成本不可追踪。
 
 ## 数据构建脚本
 
 请求和上下文构建脚本仍保留，用于后续 realbudget pipeline。先 dry-run 请求分布，不调用高德或强模型：
 
 ```bash
-.venv-training-py311/bin/python3 training/scripts/planner/data/generate_sft_data.py \
+.venv-training-py311/bin/python3 training/scripts/travelmind/data/generate_sft_data.py \
   --count 100 \
   --request-source controlled \
   --date-mode mixed \
@@ -128,10 +128,10 @@ smoke 20 -> 审计 -> 100 条 -> 审计 -> 1000 条 -> 导出 LLaMAFactory
   --dry-run-summary
 ```
 
-只构建 `PlannerContext` smoke，不调用 Planner 强模型：
+只构建 `TravelMindContext` smoke，不调用 TravelMind 强模型：
 
 ```bash
-.venv-training-py311/bin/python3 training/scripts/planner/data/generate_sft_data.py \
+.venv-training-py311/bin/python3 training/scripts/travelmind/data/generate_sft_data.py \
   --count 20 \
   --request-source controlled \
   --date-mode mixed \
@@ -148,14 +148,14 @@ smoke 20 -> 审计 -> 100 条 -> 审计 -> 1000 条 -> 导出 LLaMAFactory
 从已有 records 聚合候选：
 
 ```bash
-.venv-training-py311/bin/python3 training/scripts/planner/pricing/collect_attraction_candidates.py \
-  --records training/data/planner/eval/records.jsonl
+.venv-training-py311/bin/python3 training/scripts/travelmind/pricing/collect_attraction_candidates.py \
+  --records training/data/travelmind/eval/records.jsonl
 ```
 
 按请求分布直接收集候选：
 
 ```bash
-.venv-training-py311/bin/python3 training/scripts/planner/pricing/collect_attraction_candidates.py \
+.venv-training-py311/bin/python3 training/scripts/travelmind/pricing/collect_attraction_candidates.py \
   --collect-context \
   --count 200 \
   --request-source controlled \
@@ -166,27 +166,27 @@ smoke 20 -> 审计 -> 100 条 -> 审计 -> 1000 条 -> 导出 LLaMAFactory
 对高频候选分桶：
 
 ```bash
-.venv-training-py311/bin/python3 training/scripts/planner/pricing/bucket_attraction_price_candidates.py \
+.venv-training-py311/bin/python3 training/scripts/travelmind/pricing/bucket_attraction_price_candidates.py \
   --min-request-count 5
 ```
 
 对高频景点调用强模型估算票价：
 
 ```bash
-.venv-training-py311/bin/python3 training/scripts/planner/pricing/estimate_attraction_prices_with_llm.py \
+.venv-training-py311/bin/python3 training/scripts/travelmind/pricing/estimate_attraction_prices_with_llm.py \
   --min-request-count 5 \
   --batch-size 20 \
   --resume
 ```
 
-估算结果只用于训练预算口径，不代表官方实时票价。线上使用前需要人工审核并合并到 `backend/app/planner/attraction_price_table.json`。
+估算结果只用于训练预算口径，不代表官方实时票价。线上使用前需要人工审核并合并到 `backend/app/travelmind_core/attraction_price_table.json`。
 
 ## 评估集
 
 构建 standard eval：
 
 ```bash
-.venv-training-py311/bin/python3 training/scripts/planner/eval/build_eval_set.py \
+.venv-training-py311/bin/python3 training/scripts/travelmind/eval/build_eval_set.py \
   --count 200 \
   --start-index 0 \
   --id-prefix standard200_eval \
@@ -201,7 +201,7 @@ smoke 20 -> 审计 -> 100 条 -> 审计 -> 1000 条 -> 导出 LLaMAFactory
 当前 hard eval 使用原 `harder` 压力分布构建，主路径统一命名为 `eval_hard`。
 
 ```bash
-.venv-training-py311/bin/python3 training/scripts/planner/eval/build_eval_set.py \
+.venv-training-py311/bin/python3 training/scripts/travelmind/eval/build_eval_set.py \
   --count 300 \
   --start-index 0 \
   --id-prefix harder_eval \
@@ -209,14 +209,14 @@ smoke 20 -> 审计 -> 100 条 -> 审计 -> 1000 条 -> 导出 LLaMAFactory
   --date-mode mixed \
   --difficulty harder \
   --workers 2 \
-  --output-dir training/data/planner/eval_hard \
+  --output-dir training/data/travelmind/eval_hard \
   --resume
 ```
 
 公开仓库保留的评估入口：
 
-- `training/data/planner/eval/records.jsonl`
-- `training/data/planner/eval_hard/records.jsonl`
+- `training/data/travelmind/eval/records.jsonl`
+- `training/data/travelmind/eval_hard/records.jsonl`
 
 所有 baseline、SFT、DPO 对比都应复用这些冻结输入，避免请求分布、工具快照或天气来源变化影响模型对比。
 
@@ -259,14 +259,14 @@ training/outputs/eval/reports/<YYMMDD>_<report_slug>/
 
 ## DPO 状态
 
-当前主线把 DPO 定位为偏好训练，而不是修坏 JSON 或坏 schema。DPO prompt source 来自 `PlannerContext` 和 `planner_query`，不直接使用 teacher answer。
+当前主线把 DPO 定位为偏好训练，而不是修坏 JSON 或坏 schema。DPO prompt source 来自 `TravelMindContext` 和 `travelmind_query`，不直接使用 teacher answer。
 
 当前 DPO prompt source 只在本地保留，不进入公开仓库：
 
-- `training/data/planner/dpo/prompts.jsonl`
-- `training/data/planner/dpo/prompt_source/records.jsonl`
+- `training/data/travelmind/dpo/prompts.jsonl`
+- `training/data/travelmind/dpo/prompt_source/records.jsonl`
 
-公开仓库只保留 DPO 口径和轻量说明。pair 构造、judge、prompt source 和训练产物仍按本地实验资产处理；当前公开参考为 `docs/后训练产物/03_DPO阶段/README.md`、`docs/后训练产物/04_Rerank阶段/README.md`、`scripts/planner/README.md` 和 `scripts/planner/bestofn/README.md`。单生成最佳点是 `260519 checkpoint-138`；最终展示版本是 `260521 checkpoint-64 rerank n4`。
+公开仓库只保留 DPO 口径和轻量说明。pair 构造、judge、prompt source 和训练产物仍按本地实验资产处理；当前公开参考为 `docs/后训练产物/03_DPO阶段/README.md`、`docs/后训练产物/04_Rerank阶段/README.md`、`scripts/travelmind/README.md` 和 `scripts/travelmind/bestofn/README.md`。单生成最佳点是 `260519 checkpoint-138`；最终展示版本是 `260521 checkpoint-64 rerank n4`。
 
 ## 不上传的内容
 
@@ -276,6 +276,10 @@ training/outputs/eval/reports/<YYMMDD>_<report_slug>/
 - 废弃 prompt 消融归档
 - 推进记录、踩坑记录、面试速记、作者交流、会话记忆和临时 HTML
 - `training/outputs/` 下的大规模 generations、日志和模型输出明细
-- `training/data/planner/archive/` 和 `training/data/llamafactory/archive/`
+- `training/data/travelmind/archive/` 和 `training/data/llamafactory/archive/`
 - LoRA 权重、checkpoint、`.safetensors`、`.pt`、`.bin`
 - `.venv-training-py311/`、`.uv-cache/` 等本地环境
+
+
+
+

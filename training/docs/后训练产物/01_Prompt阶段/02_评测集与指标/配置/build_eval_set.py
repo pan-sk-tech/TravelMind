@@ -1,13 +1,13 @@
-"""构建评估集。
+﻿"""构建评估集。
 
 评估集只冻结输入侧内容：
 
 - 模拟用户请求
-- PlannerContext 工具快照
-- 压缩后的 PlannerContext
-- 线上同款 Planner prompt
+- TravelMindContext 工具快照
+- 压缩后的 TravelMindContext
+- 线上同款 TravelMind prompt
 
-它不调用 Planner 模型生成 TripPlan。后续评估 base/SFT/DPO 时，
+它不调用 TravelMind 模型生成 TripPlan。后续评估 base/SFT/DPO 时，
 都使用同一批 frozen prompt，避免把请求分布和工具快照变化混进模型对比里。
 """
 
@@ -31,7 +31,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[4]
 SCRIPTS_DIR = PROJECT_ROOT / "training" / "scripts"
 LEGACY_SCRIPTS_DIR = SCRIPTS_DIR / "legacy"
 EVAL_SCRIPTS_DIR = Path(__file__).resolve().parent
-DATA_SCRIPTS_DIR = SCRIPTS_DIR / "planner" / "data"
+DATA_SCRIPTS_DIR = SCRIPTS_DIR / "travelmind" / "data"
 BACKEND_DIR = PROJECT_ROOT / "backend"
 sys.path[:0] = [
     str(EVAL_SCRIPTS_DIR),
@@ -43,13 +43,13 @@ sys.path[:0] = [
 
 from shared.common import DATA_DIR, load_project_env, read_jsonl, write_json  # noqa: E402
 from generate_sft_data import (  # noqa: E402
-    PLANNER_AGENT_PROMPT,
+    TRAVELMIND_AGENT_PROMPT,
     append_jsonl,
     apply_budget_fit_policy,
     build_budget_constraint,
     build_party_info,
     build_one_request,
-    build_planner_query,
+    build_travelmind_query,
     date_bucket,
     format_request_id,
     get_worker_context_builder,
@@ -61,7 +61,7 @@ from generate_sft_data import (  # noqa: E402
 )
 
 
-DEFAULT_OUTPUT_DIR = DATA_DIR / "planner" / "eval"
+DEFAULT_OUTPUT_DIR = DATA_DIR / "travelmind" / "eval"
 
 EVAL_PERSON_DAY_BUDGETS = {
     "limited": [220, 270, 320],
@@ -319,9 +319,9 @@ def format_eval_id(index: int, prefix: str) -> str:
     return f"{prefix}_{index:06d}"
 
 
-def tool_counts(planner_context: dict[str, Any]) -> dict[str, int]:
-    """统计 PlannerContext 中各类工具候选数量。"""
-    snapshot = planner_context.get("tool_snapshot") or {}
+def tool_counts(travelmind_context: dict[str, Any]) -> dict[str, int]:
+    """统计 TravelMindContext 中各类工具候选数量。"""
+    snapshot = travelmind_context.get("tool_snapshot") or {}
     return {
         "classic_pois": len(snapshot.get("classic_pois") or []),
         "preference_pois": len(snapshot.get("preference_pois") or []),
@@ -335,9 +335,9 @@ def tool_counts(planner_context: dict[str, Any]) -> dict[str, int]:
     }
 
 
-def weather_provider(planner_context: dict[str, Any]) -> str:
+def weather_provider(travelmind_context: dict[str, Any]) -> str:
     """从工具状态中标记天气来源。"""
-    weather_status = (planner_context.get("tool_snapshot") or {}).get("tool_status", {}).get("weather", {})
+    weather_status = (travelmind_context.get("tool_snapshot") or {}).get("tool_status", {}).get("weather", {})
     message = str(weather_status.get("message", ""))
     if "open_meteo_archive" in message:
         return "open_meteo_archive"
@@ -530,15 +530,15 @@ def build_one_eval_record(index: int, args: argparse.Namespace, amap_api_key: st
 
     builder = get_worker_context_builder(amap_api_key, args.historical_weather_provider)
     started_at = time.perf_counter()
-    planner_context = builder.collect(request)
-    apply_budget_fit_policy(planner_context, request)
-    compact_context = builder.compact_for_planner(planner_context)
-    planner_query = build_planner_query(builder, request, planner_context)
-    control_spec = record_control_spec(raw_request, request, planner_context)
+    travelmind_context = builder.collect(request)
+    apply_budget_fit_policy(travelmind_context, request)
+    compact_context = builder.compact_for_travelmind(travelmind_context)
+    travelmind_query = build_travelmind_query(builder, request, travelmind_context)
+    control_spec = record_control_spec(raw_request, request, travelmind_context)
     elapsed = time.perf_counter() - started_at
 
     compact_context_text = json.dumps(compact_context, ensure_ascii=False)
-    raw_context_text = json.dumps(planner_context, ensure_ascii=False)
+    raw_context_text = json.dumps(travelmind_context, ensure_ascii=False)
     return {
         "record_id": request_id,
         "created_at": datetime.now(timezone.utc).isoformat(),
@@ -547,19 +547,19 @@ def build_one_eval_record(index: int, args: argparse.Namespace, amap_api_key: st
         "eval_source_index": raw_request.get("eval_source_index"),
         "request": request.model_dump(),
         "control_spec": control_spec,
-        "system_prompt": PLANNER_AGENT_PROMPT,
-        "planner_query": planner_query,
-        "compact_planner_context": compact_context,
-        "planner_context": planner_context,
+        "system_prompt": TRAVELMIND_AGENT_PROMPT,
+        "travelmind_query": travelmind_query,
+        "compact_travelmind_context": compact_context,
+        "travelmind_context": travelmind_context,
         "metadata": {
             "elapsed_seconds": round(elapsed, 3),
-            "prompt_chars": len(planner_query),
+            "prompt_chars": len(travelmind_query),
             "compact_context_chars": len(compact_context_text),
             "raw_context_chars": len(raw_context_text),
-            "weather_provider": weather_provider(planner_context),
+            "weather_provider": weather_provider(travelmind_context),
             "date_bucket": date_bucket(request.model_dump()),
-            "tool_counts": tool_counts(planner_context),
-            "tool_status": (planner_context.get("tool_snapshot") or {}).get("tool_status", {}),
+            "tool_counts": tool_counts(travelmind_context),
+            "tool_status": (travelmind_context.get("tool_snapshot") or {}).get("tool_status", {}),
             "eval_metrics_version": "current",
             "expected_output_schema": "TripPlan",
         },
@@ -826,3 +826,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

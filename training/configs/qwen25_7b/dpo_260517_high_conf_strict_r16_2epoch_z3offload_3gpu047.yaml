@@ -1,5 +1,5 @@
-### model
-model_name_or_path: /work/liweihan/wyf/helloagents-trip-planner/training/outputs/qwen25_7b/merged_sft_260516_final1200_for_dpo
+﻿### model
+model_name_or_path: /work/liweihan/wyf/travelmind/training/outputs/qwen25_7b/merged_sft_260516_final1200_for_dpo
 trust_remote_code: true
 flash_attn: auto
 
@@ -16,16 +16,16 @@ pref_loss: sigmoid
 deepspeed: /work/liweihan/wyf/LLaMA-Factory/examples/deepspeed/ds_z3_offload_config.json
 
 ### dataset
-dataset_dir: /work/liweihan/wyf/helloagents-trip-planner/training/data/llamafactory
-dataset: trip_planner_dpo_260517_high_conf_strict_train
-eval_dataset: trip_planner_dpo_260517_high_conf_strict_val
+dataset_dir: /work/liweihan/wyf/travelmind/training/data/llamafactory
+dataset: travelmind_dpo_260517_high_conf_strict_train
+eval_dataset: travelmind_dpo_260517_high_conf_strict_val
 template: qwen
 cutoff_len: 26000
 preprocessing_num_workers: 4
 dataloader_num_workers: 1
 
 ### output
-output_dir: /work/liweihan/wyf/helloagents-trip-planner/training/outputs/qwen25_7b/dpo_260517_high_conf_strict_r16_2epoch_z3offload_3gpu047
+output_dir: /work/liweihan/wyf/travelmind/training/outputs/qwen25_7b/dpo_260517_high_conf_strict_r16_2epoch_z3offload_3gpu047
 logging_steps: 1
 save_strategy: "no"
 plot_loss: true
@@ -49,3 +49,4 @@ resume_from_checkpoint: null
 do_eval: false
 per_device_eval_batch_size: 1
 eval_strategy: "no"
+

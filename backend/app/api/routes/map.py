@@ -1,4 +1,4 @@
-"""地图服务API路由"""
+﻿"""地图服务API路由"""
 
 from fastapi import APIRouter, HTTPException, Query
 from typing import Optional
@@ -160,3 +160,5 @@ async def health_check():
             status_code=503,
             detail=f"服务不可用: {str(e)}"
         )
+
+

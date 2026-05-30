@@ -1,11 +1,18 @@
-<template>
+﻿<template>
   <div class="home-container">
-    <div class="planner-page">
+    <div class="travelmind-page">
       <div class="top-banner">
         <div class="top-banner-content">
-          <div class="banner-kicker">AI Trip Planner</div>
-          <h1>创建一份可执行的旅行计划</h1>
-          <p>输入目的地、日期、同行人数和预算偏好，系统会结合工具快照生成每日行程。</p>
+          <div class="banner-kicker">TravelMind Agent Workspace</div>
+          <h1>让 TravelMind 生成一份懂你的旅行计划</h1>
+          <p>用多轮需求、城市景点知识库、天气工具、预算估算和偏好记忆，生成可检查、可导出、可落地的个性化行程。</p>
+          <div class="capability-strip">
+            <span>多轮需求采集</span>
+            <span>RAG 景点知识库</span>
+            <span>偏好记忆</span>
+            <span>天气与预算工具</span>
+            <span>PDF 导出</span>
+          </div>
         </div>
         <div class="banner-summary">
           <div>
@@ -17,8 +24,8 @@
             <strong>{{ formData.party.total }} 人</strong>
           </div>
           <div>
-            <span class="summary-label">协议</span>
-            <strong>Planner</strong>
+            <span class="summary-label">Agent</span>
+            <strong>TravelMind</strong>
           </div>
         </div>
       </div>
@@ -26,8 +33,8 @@
       <a-card class="form-card" :bordered="false">
         <div class="form-card-header">
           <div>
-            <div class="form-eyebrow">Plan Request</div>
-            <h2>行程需求</h2>
+            <div class="form-eyebrow">TravelMind Intake</div>
+            <h2>多轮需求采集</h2>
           </div>
           <div class="header-status">
             <span>{{ formData.city || '未选择城市' }}</span>
@@ -44,7 +51,7 @@
           <div class="form-section">
             <div class="section-header">
               <EnvironmentOutlined />
-              <span class="section-title">目的地与日期</span>
+              <span class="section-title">城市与出行日期</span>
             </div>
 
             <a-row :gutter="[20, 16]">
@@ -95,7 +102,7 @@
           <div class="form-section">
             <div class="section-header">
               <TeamOutlined />
-              <span class="section-title">同行与预算</span>
+              <span class="section-title">同行结构与预算约束</span>
             </div>
 
             <a-row :gutter="[20, 16]">
@@ -177,7 +184,7 @@
           <div class="form-section">
             <div class="section-header">
               <CarOutlined />
-              <span class="section-title">偏好设置</span>
+              <span class="section-title">偏好记忆与交通方式</span>
             </div>
 
             <a-row :gutter="[20, 16]">
@@ -239,13 +246,13 @@
           <div class="form-section">
             <div class="section-header">
               <EditOutlined />
-              <span class="section-title">额外要求</span>
+              <span class="section-title">对话式补充要求</span>
             </div>
 
             <a-form-item name="free_text_input">
               <a-textarea
                 v-model:value="formData.free_text_input"
-                placeholder="请输入您的额外要求，例如：想去看升旗、需要无障碍设施、对海鲜过敏等..."
+                placeholder="像和旅行顾问聊天一样补充要求，例如：我上次喜欢博物馆和城市漫步，这次想避开网红店；预算尽量控制；下雨天多安排室内景点。"
                 :rows="3"
                 size="large"
                 class="custom-textarea"
@@ -264,10 +271,10 @@
             >
               <template v-if="!loading">
                 <RocketOutlined />
-                <span>开始规划行程</span>
+                <span>启动 TravelMind Agent</span>
               </template>
               <template v-else>
-                <span>正在生成中...</span>
+                <span>TravelMind 正在规划...</span>
               </template>
             </a-button>
           </a-form-item>
@@ -420,7 +427,7 @@ watch([() => formData.start_date, () => formData.end_date], ([start, end]) => {
   }
 })
 
-// planner协议要求party.total显式等于成人、儿童、老人之和
+// TravelMind协议要求party.total显式等于成人、儿童、老人之和
 watch([() => formData.party.adults, () => formData.party.children, () => formData.party.elders], ([adults, children, elders]) => {
   const adultCount = Number(adults || 0)
   const childCount = Number(children || 0)
@@ -454,20 +461,28 @@ const handleSubmit = async () => {
   loadingProgress.value = 0
   loadingStatus.value = '正在初始化...'
 
-  // 模拟进度更新
+  // 进度条用于展示当前阶段；90% 以后等待后端真实生成结果。
+  let waitTicks = 0
   const progressInterval = setInterval(() => {
     if (loadingProgress.value < 90) {
       loadingProgress.value += 10
 
       // 更新状态文本
       if (loadingProgress.value <= 30) {
-        loadingStatus.value = '🔍 正在搜索景点...'
+        loadingStatus.value = '正在检索城市景点 RAG 知识库...'
       } else if (loadingProgress.value <= 50) {
-        loadingStatus.value = '🌤️ 正在查询天气...'
+        loadingStatus.value = '正在调用天气工具并分析出行影响...'
       } else if (loadingProgress.value <= 70) {
-        loadingStatus.value = '🏨 正在推荐酒店...'
+        loadingStatus.value = '正在召回偏好记忆并估算预算...'
       } else {
-        loadingStatus.value = '📋 正在生成行程计划...'
+        loadingStatus.value = '正在检查路线合理性并生成 TravelMind 行程...'
+      }
+    } else {
+      waitTicks += 1
+      if (waitTicks % 12 === 0) {
+        loadingStatus.value = 'TravelMind 正在等待千问返回完整行程，请稍等...'
+      } else if (waitTicks % 12 === 6) {
+        loadingStatus.value = '仍在生成预算、路线和每日安排，长行程会更慢...'
       }
     }
   }, 500)
@@ -510,7 +525,7 @@ const handleSubmit = async () => {
       // 保存到sessionStorage
       sessionStorage.setItem('tripPlan', JSON.stringify(response.data))
 
-      message.success('旅行计划生成成功!')
+      message.success('TravelMind 行程生成成功!')
 
       // 短暂延迟后跳转
       setTimeout(() => {
@@ -521,7 +536,7 @@ const handleSubmit = async () => {
     }
   } catch (error: any) {
     clearInterval(progressInterval)
-    message.error(error.message || '生成旅行计划失败,请稍后重试')
+    message.error(error.message || 'TravelMind 生成失败,请稍后重试')
   } finally {
     setTimeout(() => {
       loading.value = false
@@ -540,7 +555,7 @@ const handleSubmit = async () => {
   background: #f5f7fa;
 }
 
-.planner-page {
+.travelmind-page {
   max-width: 1280px;
   margin: 0 auto;
 }
@@ -584,6 +599,23 @@ const handleSubmit = async () => {
   color: rgba(255, 255, 255, 0.84);
   font-size: 16px;
   line-height: 1.7;
+}
+
+.capability-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.capability-strip span {
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
+  font-weight: 650;
 }
 
 .banner-summary {
@@ -856,3 +888,4 @@ const handleSubmit = async () => {
   }
 }
 </style>
+

@@ -2,10 +2,16 @@
   <div class="result-container">
     <!-- 页面头部 -->
     <div class="page-header">
-      <a-button class="back-button" size="large" @click="goBack">
-        <ArrowLeftOutlined />
-        返回首页
-      </a-button>
+      <div class="result-title-block">
+        <a-button class="back-button" size="large" @click="goBack">
+          <ArrowLeftOutlined />
+          返回 TravelMind
+        </a-button>
+        <div>
+          <div class="result-kicker">TravelMind Output</div>
+          <h1>个性化旅行规划结果</h1>
+        </div>
+      </div>
       <a-space size="middle">
         <a-button v-if="!editMode" @click="toggleEditMode" type="default">
           <EditOutlined />
@@ -36,7 +42,7 @@
           </template>
           <a-button type="default">
             <DownloadOutlined />
-            导出行程 <DownOutlined />
+            导出 TravelMind 行程 <DownOutlined />
           </a-button>
         </a-dropdown>
       </a-space>
@@ -83,7 +89,7 @@
           <!-- 左侧:行程概览和预算明细 -->
           <div class="left-info">
             <!-- 行程概览 -->
-            <a-card id="overview" :title="`${tripPlan.city}旅行计划`" :bordered="false" class="overview-card">
+            <a-card id="overview" :title="`${tripPlan.city} TravelMind 个性化旅行计划`" :bordered="false" class="overview-card">
               <div class="overview-content">
                 <div class="info-item">
                   <span class="info-label">日期</span>
@@ -174,7 +180,7 @@
         </a-card>
 
         <!-- 每日行程:可折叠 -->
-        <a-card title="每日行程" :bordered="false" class="days-card">
+        <a-card title="TravelMind 每日行程" :bordered="false" class="days-card">
           <a-collapse v-model:activeKey="activeDays" accordion>
             <a-collapse-panel
               v-for="(day, index) in tripPlan.days"
@@ -1343,11 +1349,33 @@ const destroyMaps = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 20px;
 }
 
 .back-button {
   border-radius: 8px;
   font-weight: 600;
+}
+
+.result-title-block {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.result-kicker {
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.result-title-block h1 {
+  margin: 3px 0 0;
+  color: #0f172a;
+  font-size: 24px;
+  font-weight: 780;
 }
 
 .page-header :deep(.ant-btn .anticon) {

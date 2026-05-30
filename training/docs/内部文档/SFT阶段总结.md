@@ -1,10 +1,10 @@
-# Planner SFT 阶段总结
+﻿# TravelMind SFT 阶段总结
 
 更新时间：2026-05-14
 
 结论先写在前面：
 
-**Planner 的 SFT 阶段到这里可以收束。后续默认不再继续堆 SFT 轮次，除非出现新的高质量失败样本或明确的新协议字段。**
+**TravelMind 的 SFT 阶段到这里可以收束。后续默认不再继续堆 SFT 轮次，除非出现新的高质量失败样本或明确的新协议字段。**
 
 这个阶段最有价值的产物不是某一个 checkpoint，而是完整的实验账本、评测集、数据生成链路和可复现实验路径。作为个人项目，这部分已经能说明：我们不是只跑了一次 LoRA，而是把旅行规划任务拆成了可验证的协议、预算、grounding、餐饮、候选选择和 rerank 问题，并且一路保留了反例和回退节点。
 
@@ -112,21 +112,21 @@ SFT 已经完成了它最应该完成的事：
 | SFT 目标与边界 | `training/docs/内部文档/SFT目标与边界.md` |
 | 规划上下文协议 | `training/docs/内部文档/规划上下文协议.md` |
 | 评测指标定义 | `training/docs/内部文档/评测指标.md` |
-| 数据生成 skill | `skills/trip-planner-sft-data-loop/SKILL.md` |
-| 评估对比 skill | `skills/trip-planner-eval-compare/SKILL.md` |
+| 数据生成 skill | `skills/travelmind-sft-data-loop/SKILL.md` |
+| 评估对比 skill | `skills/travelmind-eval-compare/SKILL.md` |
 
 ### 4.2 数据
 
 | 内容 | 路径 |
 | --- | --- |
-| standard 评测集 | `training/data/planner/eval/records.jsonl` |
-| hard 评测集 | `training/data/planner/eval_hard/records.jsonl` |
-| usage700 replay LLaMA-Factory 数据 | `training/data/llamafactory/generated/trip_planner_260511_main_clean_plus_realbudget_usage700_train.json` |
-| patch700-only 数据 | `training/data/llamafactory/generated/trip_planner_260511_realbudget_usage_patch700_train.json` |
-| Best-of-N 600 replay 数据 | `training/data/llamafactory/generated/trip_planner_260512_replay_usage700_plus_bestofn600_x1p5_train.json` |
-| Best-of-N 1200 replay 数据 | `training/data/llamafactory/generated/trip_planner_260513_replay_usage700_plus_bestofn1200_train.json` |
-| Best-of-N 600 原始候选 | `training/data/planner/bestofn/260511_anti_leak600_vllm01/` |
-| Best-of-N 1200 原始候选 | `training/data/planner/bestofn/260512_anti_leak1200_vllm23_w8/` |
+| standard 评测集 | `training/data/travelmind/eval/records.jsonl` |
+| hard 评测集 | `training/data/travelmind/eval_hard/records.jsonl` |
+| usage700 replay LLaMA-Factory 数据 | `training/data/llamafactory/generated/travelmind_260511_main_clean_plus_realbudget_usage700_train.json` |
+| patch700-only 数据 | `training/data/llamafactory/generated/travelmind_260511_realbudget_usage_patch700_train.json` |
+| Best-of-N 600 replay 数据 | `training/data/llamafactory/generated/travelmind_260512_replay_usage700_plus_bestofn600_x1p5_train.json` |
+| Best-of-N 1200 replay 数据 | `training/data/llamafactory/generated/travelmind_260513_replay_usage700_plus_bestofn1200_train.json` |
+| Best-of-N 600 原始候选 | `training/data/travelmind/bestofn/260511_anti_leak600_vllm01/` |
+| Best-of-N 1200 原始候选 | `training/data/travelmind/bestofn/260512_anti_leak1200_vllm23_w8/` |
 | 数据 manifest | `training/data/llamafactory/manifests/` |
 
 ### 4.3 训练输出
@@ -146,22 +146,22 @@ SFT 已经完成了它最应该完成的事：
 | 1200 vs 600 全量对比 | `training/outputs/eval/comparisons/260513_bestofn1200_vs_600final_w10/260513_bestofn1200_vs_600final_w10_full_report.md` |
 | 1200 vs 600 standard 切片 | `training/outputs/eval/comparisons/260513_bestofn1200_vs_600final_w10/slice_standard/slice_report.md` |
 | 1200 vs 600 hard 切片 | `training/outputs/eval/comparisons/260513_bestofn1200_vs_600final_w10/slice_hard/slice_report.md` |
-| ckpt104 rerank standard/hard | `training/outputs/eval/by_model/sft_qwen25_7b_planner_260513_rerank_ckpt104/` |
-| final1200 rerank standard/hard | `training/outputs/eval/by_model/sft_qwen25_7b_planner_260513_rerank_final1200/` |
-| old600final rerank standard/hard | `training/outputs/eval/by_model/sft_qwen25_7b_planner_260513_rerank_old600final/` |
+| ckpt104 rerank standard/hard | `training/outputs/eval/by_model/sft_qwen25_7b_travelmind_260513_rerank_ckpt104/` |
+| final1200 rerank standard/hard | `training/outputs/eval/by_model/sft_qwen25_7b_travelmind_260513_rerank_final1200/` |
+| old600final rerank standard/hard | `training/outputs/eval/by_model/sft_qwen25_7b_travelmind_260513_rerank_old600final/` |
 
 ### 4.5 关键脚本
 
 | 用途 | 路径 |
 | --- | --- |
-| vLLM/LoRA 服务 | `training/scripts/serving/serve_planner_model.py` |
+| vLLM/LoRA 服务 | `training/scripts/serving/serve_travelmind_model.py` |
 | 单模型生成评估 | `training/scripts/eval/eval_generate.py` |
 | 规则指标计算 | `training/scripts/eval/eval_rule_metrics.py` |
 | rerank 多候选合并 | `training/scripts/eval/eval_rerank_generations.py` |
-| Best-of-N prompt 构造 | `training/scripts/planner/bestofn/build_prompts.py` |
-| Best-of-N 候选生成 | `training/scripts/planner/bestofn/generate_candidates.py` |
-| Best-of-N 选择 | `training/scripts/planner/bestofn/select_best.py` |
-| replay + bestofn 数据合成 | `training/scripts/planner/bestofn/build_replay_plus_bestofn_dataset.py` |
+| Best-of-N prompt 构造 | `training/scripts/travelmind/bestofn/build_prompts.py` |
+| Best-of-N 候选生成 | `training/scripts/travelmind/bestofn/generate_candidates.py` |
+| Best-of-N 选择 | `training/scripts/travelmind/bestofn/select_best.py` |
+| replay + bestofn 数据合成 | `training/scripts/travelmind/bestofn/build_replay_plus_bestofn_dataset.py` |
 
 ## 5. 后续路线
 
@@ -189,10 +189,11 @@ SFT 阶段结束后，项目重心切到下面几件事：
 
 这轮 SFT 的价值已经兑现：协议稳定、预算语义明显改善、hard case 能打，实验记录也足够完整。继续做 SFT 不是不能涨，而是投入产出已经不如 rerank 和候选策略。
 
-因此这里正式把 Planner SFT 阶段收束为：
+因此这里正式把 TravelMind SFT 阶段收束为：
 
 ```text
 SFT: closed / frozen
 Default next step: rerank-first inference pipeline
 Primary asset: data + eval + experiment record
 ```
+

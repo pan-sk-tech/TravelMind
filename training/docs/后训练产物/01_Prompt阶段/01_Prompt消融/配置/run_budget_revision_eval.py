@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-"""Run a two-pass budget revision experiment for planner outputs.
+﻿#!/usr/bin/env python3
+"""Run a two-pass budget revision experiment for travelmind outputs.
 
 This script intentionally treats budget arithmetic as engineering work:
 
@@ -35,7 +35,7 @@ sys.path.insert(0, str(BACKEND_DIR))
 sys.path.insert(0, str(LEGACY_SCRIPTS_DIR))
 
 from app.models.schemas import TripPlan  # noqa: E402
-from app.planner.output import extract_json_object  # noqa: E402
+from app.travelmind.output import extract_json_object  # noqa: E402
 from eval_rule_metrics import evaluate_output, recompute_budget_from_selected_items  # noqa: E402
 from eval_utils import (  # noqa: E402
     budget_alignment_details,
@@ -52,12 +52,12 @@ from eval_utils import (  # noqa: E402
 
 REVISION_SYSTEM_PROMPT = """你是旅行计划预算修正器。
 
-你会收到 PlannerContext、一个已有 TripPlan，以及工程侧按候选价格重算出来的预算反馈。
+你会收到 TravelMindContext、一个已有 TripPlan，以及工程侧按候选价格重算出来的预算反馈。
 
 你的职责：
 1. 只修改必要的 hotel、attractions、meals，让行程更贴近 budget_feedback 的目标区间。
 2. 不要自己解释预算计算过程；预算由工程侧最终回填。
-3. 只能使用 PlannerContext.tool_snapshot 中的酒店、景点、餐饮候选。
+3. 只能使用 TravelMindContext.tool_snapshot 中的酒店、景点、餐饮候选。
 4. 保持 city/start_date/end_date/days/weather_info 的日期结构不变。
 5. 每天仍然必须有 1-3 个景点、breakfast/lunch/dinner 三餐。
 6. 中间住宿日 hotel 不能为 null，且中间住宿日必须使用同一家酒店；最后一天可以 hotel=null。
@@ -75,7 +75,7 @@ REVISION_SYSTEM_PROMPT = """你是旅行计划预算修正器。
 
 REVISION_PATCH_SYSTEM_PROMPT = """你是旅行计划预算修正器。
 
-你会收到 PlannerContext、已有 TripPlan 的简要选择、工程侧重算预算反馈，以及可替换候选。
+你会收到 TravelMindContext、已有 TripPlan 的简要选择、工程侧重算预算反馈，以及可替换候选。
 
 你只输出一个 patch JSON，不要重写完整行程计划。工程侧会把 patch 应用到原计划并重新计算预算。
 
@@ -127,7 +127,7 @@ def unique_generations(path: Path) -> dict[str, dict[str, Any]]:
 
 
 def compact_context(record: dict[str, Any]) -> dict[str, Any]:
-    return record.get("planner_context") or record.get("compact_planner_context") or {}
+    return record.get("travelmind_context") or record.get("compact_travelmind_context") or {}
 
 
 def budget_status(record: dict[str, Any], budget_eval: dict[str, Any]) -> str:
@@ -214,7 +214,7 @@ def build_budget_feedback(record: dict[str, Any], result: dict[str, Any]) -> dic
 def build_revision_user_prompt(record: dict[str, Any], plan: dict[str, Any], feedback: dict[str, Any]) -> str:
     payload = {
         "task": "根据预算反馈修正已有 TripPlan。只替换必要的酒店、景点、餐饮，使工程侧重算预算更贴合目标。",
-        "planner_context": compact_context(record),
+        "travelmind_context": compact_context(record),
         "budget_feedback": feedback,
         "previous_plan": plan,
     }
@@ -785,11 +785,11 @@ def summarize_experiment(
         "location_object_ok",
         "weather_match",
     ]
-    planner_draft_keys = draft_core_keys + ["meal_grounding_ok"]
+    travelmind_draft_keys = draft_core_keys + ["meal_grounding_ok"]
     tracked = {
-        "planner_draft_hard_pass": planner_draft_keys,
+        "travelmind_draft_hard_pass": travelmind_draft_keys,
         "budget_selection_ok": ["recomputed_budget_fit_ok"],
-        "draft_budget_fit_pass": planner_draft_keys + ["recomputed_budget_fit_ok"],
+        "draft_budget_fit_pass": travelmind_draft_keys + ["recomputed_budget_fit_ok"],
         "recomputed_budget_hard_ok": ["recomputed_budget_hard_ok"],
         "meal_grounding_ok": ["meal_grounding_ok"],
         "attraction_grounding_ok": ["attraction_grounding_ok"],
@@ -950,3 +950,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

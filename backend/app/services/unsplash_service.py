@@ -1,4 +1,4 @@
-"""Unsplash图片服务"""
+﻿"""Unsplash图片服务"""
 
 import requests
 from typing import List, Optional
@@ -83,3 +83,5 @@ def get_unsplash_service() -> UnsplashService:
         _unsplash_service = UnsplashService()
 
     return _unsplash_service
+
+

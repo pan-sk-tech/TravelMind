@@ -1,4 +1,4 @@
-import axios from 'axios'
+﻿import axios from 'axios'
 import type { TripFormData, TripPlanResponse } from '@/types'
 
 const configuredApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim()
@@ -9,7 +9,7 @@ export const API_BASE_URL = configuredApiBaseUrl
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 600000, // 10分钟超时
+  timeout: 240000, // 4分钟超时，避免页面长时间停在生成中
   headers: {
     'Content-Type': 'application/json'
   }
@@ -44,10 +44,13 @@ apiClient.interceptors.response.use(
  */
 export async function generateTripPlan(formData: TripFormData): Promise<TripPlanResponse> {
   try {
-    const response = await apiClient.post<TripPlanResponse>('/api/trip/plan', formData)
+    const response = await apiClient.post<TripPlanResponse>('/api/travelmind/plan', formData)
     return response.data
   } catch (error: any) {
     console.error('生成旅行计划失败:', error)
+    if (error.code === 'ECONNABORTED') {
+      throw new Error('TravelMind 生成超时。请先缩短天数、减少偏好，或检查千问 API Key/Base URL 是否可用。')
+    }
     throw new Error(error.response?.data?.detail || error.message || '生成旅行计划失败')
   }
 }
@@ -66,3 +69,4 @@ export async function healthCheck(): Promise<any> {
 }
 
 export default apiClient
+

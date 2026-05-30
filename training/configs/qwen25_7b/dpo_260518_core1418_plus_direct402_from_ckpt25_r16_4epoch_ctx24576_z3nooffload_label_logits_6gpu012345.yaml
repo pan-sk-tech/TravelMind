@@ -1,6 +1,6 @@
-### model
-model_name_or_path: /work/liweihan/wyf/helloagents-trip-planner/training/outputs/qwen25_7b/merged_sft_260516_final1200_for_dpo
-adapter_name_or_path: /work/liweihan/wyf/helloagents-trip-planner/training/outputs/qwen25_7b/dpo_260518_fd600_planner_soft_direct402_r16_4epoch_z3offload_torchadam_5gpu01234/checkpoint-25
+﻿### model
+model_name_or_path: /work/liweihan/wyf/travelmind/training/outputs/qwen25_7b/merged_sft_260516_final1200_for_dpo
+adapter_name_or_path: /work/liweihan/wyf/travelmind/training/outputs/qwen25_7b/dpo_260518_fd600_travelmind_soft_direct402_r16_4epoch_z3offload_torchadam_5gpu01234/checkpoint-25
 trust_remote_code: true
 flash_attn: auto
 
@@ -14,19 +14,19 @@ lora_dropout: 0.05
 lora_target: all
 pref_beta: 0.1
 pref_loss: sigmoid
-deepspeed: /work/liweihan/wyf/helloagents-trip-planner/training/configs/deepspeed/ds_z3_no_offload_config.json
+deepspeed: /work/liweihan/wyf/travelmind/training/configs/deepspeed/ds_z3_no_offload_config.json
 
 ### dataset
-dataset_dir: /work/liweihan/wyf/helloagents-trip-planner/training/data/llamafactory
-dataset: trip_planner_dpo_260518_core1418_plus_direct402_train
-eval_dataset: trip_planner_dpo_260518_core1418_plus_direct402_val
+dataset_dir: /work/liweihan/wyf/travelmind/training/data/llamafactory
+dataset: travelmind_dpo_260518_core1418_plus_direct402_train
+eval_dataset: travelmind_dpo_260518_core1418_plus_direct402_val
 template: qwen
 cutoff_len: 24576
 preprocessing_num_workers: 4
 dataloader_num_workers: 1
 
 ### output
-output_dir: /work/liweihan/wyf/helloagents-trip-planner/training/outputs/qwen25_7b/dpo_260518_core1418_plus_direct402_from_ckpt25_r16_4epoch_ctx24576_z3nooffload_label_logits_6gpu012345
+output_dir: /work/liweihan/wyf/travelmind/training/outputs/qwen25_7b/dpo_260518_core1418_plus_direct402_from_ckpt25_r16_4epoch_ctx24576_z3nooffload_label_logits_6gpu012345
 logging_steps: 1
 save_strategy: steps
 save_steps: 18
@@ -52,3 +52,4 @@ resume_from_checkpoint: null
 do_eval: false
 per_device_eval_batch_size: 1
 eval_strategy: "no"
+

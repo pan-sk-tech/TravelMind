@@ -1,4 +1,4 @@
-"""Helpers for MCP server subprocess environments."""
+﻿"""Helpers for MCP server subprocess environments."""
 
 import os
 from pathlib import Path
@@ -19,3 +19,5 @@ def build_amap_mcp_env(amap_api_key: str) -> Dict[str, str]:
         if value:
             env[key] = value
     return env
+
+

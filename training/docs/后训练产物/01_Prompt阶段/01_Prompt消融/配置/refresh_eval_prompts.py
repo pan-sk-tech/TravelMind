@@ -1,8 +1,8 @@
-"""刷新 frozen eval 记录中的 Planner prompt。
+﻿"""刷新 frozen eval 记录中的 TravelMind prompt。
 
-这个脚本不重新调用高德、Open-Meteo 或 Planner 模型，只使用已落盘的
-request/planner_context 重新生成 system_prompt、compact_planner_context 和
-planner_query。适合在 prompt 规则有小改动后，复用同一批工具快照跑 baseline。
+这个脚本不重新调用高德、Open-Meteo 或 TravelMind 模型，只使用已落盘的
+request/travelmind_context 重新生成 system_prompt、compact_travelmind_context 和
+travelmind_query。适合在 prompt 规则有小改动后，复用同一批工具快照跑 baseline。
 """
 
 from __future__ import annotations
@@ -20,7 +20,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[4]
 SCRIPTS_DIR = PROJECT_ROOT / "training" / "scripts"
 LEGACY_SCRIPTS_DIR = SCRIPTS_DIR / "legacy"
 EVAL_SCRIPTS_DIR = Path(__file__).resolve().parent
-DATA_SCRIPTS_DIR = SCRIPTS_DIR / "planner" / "data"
+DATA_SCRIPTS_DIR = SCRIPTS_DIR / "travelmind" / "data"
 BACKEND_DIR = PROJECT_ROOT / "backend"
 sys.path[:0] = [
     str(EVAL_SCRIPTS_DIR),
@@ -32,43 +32,43 @@ sys.path[:0] = [
 
 from shared.common import read_jsonl, write_json  # noqa: E402
 from build_eval_set import summarize_records, write_request_row, write_summary_markdown  # noqa: E402
-from app.agents.planner_query import build_planner_query  # noqa: E402
-from app.agents.prompts import PLANNER_AGENT_PROMPT  # noqa: E402
+from app.agents.travelmind_query import build_travelmind_query  # noqa: E402
+from app.agents.prompts import TRAVELMIND_AGENT_PROMPT  # noqa: E402
 from app.models.schemas import TripRequest  # noqa: E402
-from app.planner.compact import compact_for_planner  # noqa: E402
-from app.planner.policy import build_budget_fit_policy, build_route_policy  # noqa: E402
+from app.travelmind.compact import compact_for_travelmind  # noqa: E402
+from app.travelmind.policy import build_budget_fit_policy, build_route_policy  # noqa: E402
 
 
 class FrozenContextBuilder:
-    """给 build_planner_query 提供线上同名压缩接口。"""
+    """给 build_travelmind_query 提供线上同名压缩接口。"""
 
-    def compact_for_planner(self, planner_context: dict[str, Any]) -> dict[str, Any]:
-        return compact_for_planner(planner_context)
+    def compact_for_travelmind(self, travelmind_context: dict[str, Any]) -> dict[str, Any]:
+        return compact_for_travelmind(travelmind_context)
 
 
 def refresh_record(record: dict[str, Any]) -> dict[str, Any]:
     """刷新一条 frozen eval 记录中的 prompt 相关字段。"""
     request = TripRequest(**(record.get("request") or {}))
-    planner_context = normalize_planner_context(record.get("planner_context") or {}, request)
+    travelmind_context = normalize_travelmind_context(record.get("travelmind_context") or {}, request)
     builder = FrozenContextBuilder()
 
-    compact_context = builder.compact_for_planner(planner_context)
-    planner_query = build_planner_query(builder, request, planner_context)
+    compact_context = builder.compact_for_travelmind(travelmind_context)
+    travelmind_query = build_travelmind_query(builder, request, travelmind_context)
     compact_context_text = json.dumps(compact_context, ensure_ascii=False)
-    raw_context_text = json.dumps(planner_context, ensure_ascii=False)
+    raw_context_text = json.dumps(travelmind_context, ensure_ascii=False)
 
     refreshed = dict(record)
-    refreshed["system_prompt"] = PLANNER_AGENT_PROMPT
-    refreshed["planner_query"] = planner_query
-    refreshed["compact_planner_context"] = compact_context
-    refreshed["planner_context"] = planner_context
+    refreshed["system_prompt"] = TRAVELMIND_AGENT_PROMPT
+    refreshed["travelmind_query"] = travelmind_query
+    refreshed["compact_travelmind_context"] = compact_context
+    refreshed["travelmind_context"] = travelmind_context
     refreshed["refreshed_at"] = datetime.now(timezone.utc).isoformat()
     refreshed["refresh_source_record"] = record.get("record_id")
 
     metadata = dict(refreshed.get("metadata") or {})
     metadata.update(
         {
-            "prompt_chars": len(planner_query),
+            "prompt_chars": len(travelmind_query),
             "compact_context_chars": len(compact_context_text),
             "raw_context_chars": len(raw_context_text),
             "prompt_refresh": True,
@@ -82,9 +82,9 @@ def refresh_record(record: dict[str, Any]) -> dict[str, Any]:
     return refreshed
 
 
-def normalize_planner_context(planner_context: dict[str, Any], request: TripRequest) -> dict[str, Any]:
-    """让旧 frozen records 对齐当前线上 PlannerContext 主线。"""
-    context = copy.deepcopy(planner_context)
+def normalize_travelmind_context(travelmind_context: dict[str, Any], request: TripRequest) -> dict[str, Any]:
+    """让旧 frozen records 对齐当前线上 TravelMindContext 主线。"""
+    context = copy.deepcopy(travelmind_context)
     context["route_policy"] = build_route_policy(request)
 
     snapshot = context.setdefault("tool_snapshot", {})
@@ -97,13 +97,13 @@ def normalize_planner_context(planner_context: dict[str, Any], request: TripRequ
     tool_status = dict(snapshot.get("tool_status") or {})
     tool_status["routes"] = {
         "ok": True,
-        "message": "disabled; planner uses poi address/district/location",
+        "message": "disabled; travelmind uses poi address/district/location",
     }
     snapshot["tool_status"] = tool_status
 
-    planner_constraints = context.setdefault("planner_constraints", {})
-    planner_constraints["budget_fit_policy"] = build_budget_fit_policy(request)
-    planner_constraints["route_policy"] = (
+    travelmind_constraints = context.setdefault("travelmind_constraints", {})
+    travelmind_constraints["budget_fit_policy"] = build_budget_fit_policy(request)
+    travelmind_constraints["route_policy"] = (
         "当前版本不提供路线hint；请根据候选POI的district、address和location"
         "自行安排顺路组合，避免明显跨区跳跃。"
     )
@@ -119,7 +119,7 @@ def write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="刷新 frozen eval 的 Planner prompt")
+    parser = argparse.ArgumentParser(description="刷新 frozen eval 的 TravelMind prompt")
     parser.add_argument("--input-records", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     return parser.parse_args()
@@ -154,3 +154,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

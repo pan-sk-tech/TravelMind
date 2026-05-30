@@ -1,4 +1,4 @@
-"""Generate a human-readable full report from rule eval reports."""
+﻿"""Generate a human-readable full report from rule eval reports."""
 
 from __future__ import annotations
 
@@ -12,8 +12,8 @@ from typing import Any
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
-DEFAULT_STANDARD_RECORDS = PROJECT_ROOT / "training/data/planner/eval/records.jsonl"
-DEFAULT_HARD_RECORDS = PROJECT_ROOT / "training/data/planner/eval_hard/records.jsonl"
+DEFAULT_STANDARD_RECORDS = PROJECT_ROOT / "training/data/travelmind/eval/records.jsonl"
+DEFAULT_HARD_RECORDS = PROJECT_ROOT / "training/data/travelmind/eval_hard/records.jsonl"
 
 HARDPASS_METRICS = [
     ("硬通过", "hard_pass"),
@@ -815,3 +815,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

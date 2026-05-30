@@ -1,9 +1,9 @@
-{
+﻿{
   "version": "attraction_price_table_v1",
   "updated_at": "2026-05-03",
   "currency": "CNY",
   "price_unit": "adult_ticket_cny",
-  "note": "面向Planner预算训练的成人全价估算表，非实时票价；后续可替换为人工核验或OTA/景区官方数据。",
+  "note": "面向TravelMind预算训练的成人全价估算表，非实时票价；后续可替换为人工核验或OTA/景区官方数据。",
   "items": [
     {
       "city": "北京",
@@ -287,3 +287,4 @@
     }
   ]
 }
+

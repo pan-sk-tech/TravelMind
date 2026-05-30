@@ -1,4 +1,4 @@
-### model
+﻿### model
 model_name_or_path: Qwen/Qwen2.5-7B-Instruct
 trust_remote_code: true
 flash_attn: fa2
@@ -17,8 +17,8 @@ deepspeed: training/configs/shared/ds_z3_param_offload_config.json
 
 ### dataset
 dataset_dir: training/data/llamafactory
-dataset: trip_planner_260509_main_clean_train
-eval_dataset: trip_planner_260509_main_clean_test
+dataset: travelmind_260509_main_clean_train
+eval_dataset: travelmind_260509_main_clean_test
 template: qwen
 cutoff_len: 24576
 overwrite_cache: true
@@ -48,3 +48,4 @@ ddp_timeout: 180000000
 ### eval
 per_device_eval_batch_size: 1
 eval_strategy: epoch
+
