@@ -2,27 +2,6 @@
 
 travelmind 数据从新的 TravelMindContext 协议重新生成，不再直接沿用 legacy clean records。目录边界以 `training/STRUCTURE.md` 为准。
 
-当前主入口：
-
-```text
-training/data/travelmind/
-  eval/
-    requests.jsonl
-    records.jsonl
-    errors.jsonl
-    summary.json
-    数据集说明.md
-    评估集摘要.md
-    上下文重建说明.md
-  eval_hard/
-    ...                 # hard split，结构同 eval/
-  attraction_prices/
-    reports/            # 公开审核说明
-    snapshots/          # 小体积票价表快照
-    generated/          # 本地候选/估价 JSONL 和日志，默认忽略
-  SFT已归档说明.md
-```
-
 `sft/`、`sft_realbudget_runs/`、`dpo/`、`bestofn/` 和 `archive/` 默认是本地生成或归档资产，不作为公开主入口。新 SFT 数据应写入 `sft_runs/<YYMMDD>_<run_slug>/`，并保留 usage 统计、manifest 和审计摘要。
 
 travelmind clean SFT 样本必须显式包含：
